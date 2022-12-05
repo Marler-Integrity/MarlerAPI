@@ -1,9 +1,9 @@
 //middleware and utils
-const asyncHandler = require('../middleware/async');
-const ErrorResponse = require('../utils/ErrorResponse');
+const asyncHandler = require('../../middleware/async');
+const ErrorResponse = require('../../utils/ErrorResponse');
 
 //models
-const Sub = require('../models/Sub');
+const Sub = require('../../models/Subs/Sub');
 
 //@desc     Get all Sub Documents - by username or admin(all docs)
 //@route    GET /api/v1/subs/

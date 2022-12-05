@@ -5,7 +5,12 @@ const {
     createSub,
     updateSub,
     deleteSub
-} = require('../controllers/subs');
+} = require('../../controllers/Subs/subs');
+
+const {
+    getEmployeeNames,
+    getEmployeeData
+} = require('../../controllers/Subs/Admin/admin');
 
 const router = express.Router();
 
@@ -18,5 +23,13 @@ router
     .route('/:id')
     .put(updateSub)
     .delete(deleteSub)
+
+router
+    .route('/admin')
+    .get(getEmployeeData)
+
+router  
+    .route('/admin/employees')
+    .get(getEmployeeNames)
 
 module.exports = router;
