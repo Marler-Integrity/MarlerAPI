@@ -27,8 +27,8 @@ const SubSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        // default: new Date( Date.now() + (6.048e+8 * 2) )
-        dafault: new Date( Date.now() + 100 )
+        default: new Date( Date.now() + (6.048e+8 * 2) )
+        // dafault: new Date( Date.now() + 100 )
     }
 });
 
