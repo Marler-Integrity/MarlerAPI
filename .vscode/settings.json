@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/add5c8a3-3053-4799-8748-123aee274c6f/appservices/subscriptions/add5c8a3-3053-4799-8748-123aee274c6f/resourceGroups/marler-resource/providers/Microsoft.Web/sites/MarlerAPI",
+    "appService.deploySubpath": "."
+}
