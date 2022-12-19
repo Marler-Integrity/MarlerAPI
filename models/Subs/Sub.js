@@ -27,8 +27,7 @@ const SubSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        // default: new Date( Date.now() + (6.048e+8 * 2) )
-        default: new Date( Date.now() + 100 )
+        default: new Date( Date.now() + (6.048e+8 * 3) ) //deletes in three weeks from day created
     }
 });
 
