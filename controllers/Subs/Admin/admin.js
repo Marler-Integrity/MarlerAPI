@@ -42,11 +42,8 @@ exports.getEmployeeData = asyncHandler(async (req, res, next) => {
 //@route    GET /api/v1/subs/admin/approve
 //@access   Private - Teams Authentication
 exports.approveSubs = asyncHandler(async (req, res, next) => {
-    //console.log(req.body)
-    //const idArray = JSON.parse(req.body);
-    
-    req.body.forEach((sub) => {
-        Sub.findByIdAndUpdate(sub, {approved: true});
+    req.body.forEach(async(sub) => {
+        await Sub.findByIdAndUpdate(sub, {approved: true});
     });
 
     res.status(200).json({
