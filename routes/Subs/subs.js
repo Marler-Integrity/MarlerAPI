@@ -9,7 +9,8 @@ const {
 
 const {
     getEmployeeNames,
-    getEmployeeData
+    getEmployeeData,
+    approveSubs
 } = require('../../controllers/Subs/Admin/admin');
 
 const router = express.Router();
@@ -31,5 +32,9 @@ router
 router  
     .route('/admin/employees')
     .get(getEmployeeNames)
+
+router
+    .route('/admin/approve')
+    .put(approveSubs)
 
 module.exports = router;
