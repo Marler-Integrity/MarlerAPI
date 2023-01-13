@@ -19,6 +19,13 @@ const HotelSchema = new mongoose.Schema({
     rate: {
         type: Number
     },
+    checkedOut: {
+        type: Date
+    },
+    checkedOutEarly: {
+        type: Boolean,
+        default: false
+    },
     expiresAt: {
         type: Date
     }
