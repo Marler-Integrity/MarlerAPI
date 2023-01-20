@@ -11,7 +11,7 @@ dotenv.config({ path: './config/config.env' });
 //route files
 const subs = require('./routes/Subs/subs');
 const hotels = require('./routes/Hotels/hotels');
-const users = requre('./routes/Users/users');
+const users = require('./routes/Users/users');
 
 // connect to DB
 connectDB();
