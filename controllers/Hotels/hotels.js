@@ -9,7 +9,7 @@ const Hotel = require('../../models/Hotels/Hotel');
 //@access   Public
 exports.getAllHotels = asyncHandler(async(req, res, next) => {
     let hotelDocs;
-    if(req.query.user){
+    if(req.query.user && req.query.user !== ''){
         hotelDocs = await Hotel.find({employee: req.query.user})
     } else {
         hotelDocs = await Hotel.find();
