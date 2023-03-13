@@ -27,7 +27,8 @@ const HotelSchema = new mongoose.Schema({
         default: false
     },
     expiresAt: {
-        type: Date
+        type: Date,
+        default: new Date( Date.now() + (6.048e+8 * 8) ) //deletes in three weeks from day created
     }
 });
 
