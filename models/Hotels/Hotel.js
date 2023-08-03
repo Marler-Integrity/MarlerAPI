@@ -2,22 +2,32 @@ const mongoose = require('mongoose');
 
 const HotelSchema = new mongoose.Schema({
     employee: {
-        type: String
+        type: String,
+        required: [true, "Please add employee's full name"]
     },
     checkIn: {
-        type: Date
+        type: Date,
+        required: [true, "Please enter check-in date"]
+    },
+    checkOut: {
+        type: Date,
+        required: [true, "Please enter check-out date"]
     },
     hotelName: {
-        type: String
+        type: String,
+        require: [true, "Please enter hotel name"]
     },
     town: {
-        type: String
+        type: String,
+        require: [true, "Please enter town name"]
     },
     numNights: {
-        type: Number
+        type: Number,
+        required: ["Please enter number of nights"]
     },
     rate: {
-        type: Number
+        type: Number,
+        required: [true, "Please enter the rate"]
     },
     checkedOut: {
         type: Date
@@ -28,7 +38,7 @@ const HotelSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        default: new Date( Date.now() + (6.048e+8 * 8) ) //deletes in three weeks from day created
+        // default: new Date( Date.now() + (6.048e+8 * 4) )  //expires at comes when approved - this time equates to 4 weeks
     }
 });
 
