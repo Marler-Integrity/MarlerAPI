@@ -7,7 +7,8 @@ const {
     getHotel,
     createHotel,
     deleteHotel,
-    updateHotel
+    updateHotel,
+    archiveHotels
 } = require('../../controllers/Hotels/hotels');
 
 const router = express.Router();
@@ -16,6 +17,10 @@ router
     .route('/')
     .get(deleteExpired(Hotel), getAllHotels)
     .post(createHotel);
+
+router
+    .route('/archive')
+    .put(archiveHotels);
 
 router  
     .route('/:id')

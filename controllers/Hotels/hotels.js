@@ -78,3 +78,31 @@ exports.updateHotel = asyncHandler(async(req, res, next) => {
         data: hotelDoc
     })
 });
+
+//@desc     Archive Hotel Bookings
+//@route    GET /api/v1/hotels/archive
+//@access   Private - Teams Authentication
+exports.archiveHotels = asyncHandler(async (req, res, next) => {
+    try {
+        const updatePromises = req.body.map(async (hotelId) => {
+            console.log('hello')
+            const hotel = await Hotel.findById(hotelId);
+            const hotelObject = hotel.toObject();
+            // If the archived field doesn't exist, set it to true; otherwise, toggle its value
+            const newArchivedStatus = hotelObject.hasOwnProperty('archived') ? !hotel.archived : true;
+        
+            return Hotel.findByIdAndUpdate(hotelId, { archived: newArchivedStatus });
+        });
+        
+        // Wait for all updates to complete
+        await Promise.all(updatePromises);
+        
+        // Send response
+        res.status(200).json({
+            success: true,
+            msg: 'Hotels have been archived'
+        });
+    } catch (error) {
+        return next(new ErrorResponse(500, `Server Error - archiveHotels`))
+    }
+});
