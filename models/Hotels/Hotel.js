@@ -11,7 +11,7 @@ const HotelSchema = new mongoose.Schema({
     },
     checkOut: {
         type: Date,
-        required: [true, "Please enter check-out date"]
+        // required: [true, "Please enter check-out date"]
     },
     hotelName: {
         type: String,
@@ -27,7 +27,7 @@ const HotelSchema = new mongoose.Schema({
     },
     rate: {
         type: Number,
-        required: [true, "Please enter the rate"]
+        // required: [true, "Please enter the rate"]
     },
     checkedOut: {
         type: Date
@@ -47,3 +47,4 @@ const HotelSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Hotel', HotelSchema);
+
