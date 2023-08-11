@@ -1,11 +1,12 @@
 {
   "name": "marler-api",
   "version": "1.0.0",
-  "description": "API For Marler INtegrity",
+  "description": "API For Marler Integrity",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "node server.js"
   },
   "author": "Bryan Lilly",
   "license": "ISC",
