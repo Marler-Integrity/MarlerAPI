@@ -85,7 +85,6 @@ exports.updateHotel = asyncHandler(async(req, res, next) => {
 exports.archiveHotels = asyncHandler(async (req, res, next) => {
     try {
         const updatePromises = req.body.map(async (hotelId) => {
-            console.log('hello')
             const hotel = await Hotel.findById(hotelId);
             const hotelObject = hotel.toObject();
             // If the archived field doesn't exist, set it to true; otherwise, toggle its value
