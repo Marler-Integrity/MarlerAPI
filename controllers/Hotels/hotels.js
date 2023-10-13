@@ -105,3 +105,26 @@ exports.archiveHotels = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(500, `Server Error - archiveHotels`))
     }
 });
+
+//@desc     Update Folio
+//@route    PUT /api/v1/hotels/folio/:id
+//@access   Private - Teams Authentication
+exports.folioReceived = asyncHandler(async(req, res, next) => {
+    try {
+        let hotel = await Hotel.findById(req.params.id);
+
+        if(!hotel) return next(new ErrorResponse(404, `Hotel with ID ${req.params.id} Not Found`));
+
+        let folio = hotel.folio;
+
+        hotel.folio = !folio;
+        hotel.save();
+
+        res.status(200).json({
+            success: true,
+            data: hotel
+        });
+    } catch (error) {
+        return next(new ErrorResponse(500, 'Server Error - folioReceived'));
+    }
+});

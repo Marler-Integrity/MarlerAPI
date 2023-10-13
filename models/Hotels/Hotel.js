@@ -40,6 +40,10 @@ const HotelSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    folio: {
+        type: Boolean,
+        default: false
+    },
     expiresAt: {
         type: Date,
         // default: new Date( Date.now() + (6.048e+8 * 4) )  //expires at comes when approved - this time equates to 4 weeks

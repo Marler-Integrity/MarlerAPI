@@ -8,7 +8,8 @@ const {
     createHotel,
     deleteHotel,
     updateHotel,
-    archiveHotels
+    archiveHotels,
+    folioReceived
 } = require('../../controllers/Hotels/hotels');
 
 const router = express.Router();
@@ -21,6 +22,10 @@ router
 router
     .route('/archive')
     .put(archiveHotels);
+
+router
+    .route('/folio/:id')
+    .put(folioReceived);
 
 router  
     .route('/:id')
