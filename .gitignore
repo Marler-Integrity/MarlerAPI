@@ -1,3 +1,4 @@
 /node_modules
 /config/config.env
 Migration.js
+/_data

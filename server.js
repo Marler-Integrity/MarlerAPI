@@ -12,6 +12,7 @@ dotenv.config({ path: './config/config.env' });
 const subs = require('./routes/Subs/subs');
 const hotels = require('./routes/Hotels/hotels');
 const users = require('./routes/Users/users');
+const checklist = require('./routes/Checklist/checklist');
 
 // connect to DB
 connectDB();
@@ -36,6 +37,9 @@ app.use(express.json());
 app.use('/api/v1/subs', subs);
 app.use('/api/v1/hotels', hotels);
 app.use('/api/v1/users', users);
+
+//route mounting for checklist
+app.use('/api/v1/checklist', checklist);
 
 //error handler
 app.use(errorHandler);
