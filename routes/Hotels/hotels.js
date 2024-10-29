@@ -1,6 +1,5 @@
 const express = require('express');
 const deleteExpired = require('../../middleware/deleteExpired');
-const Hotel = require('../../models/Hotels/Hotel');
 
 const {
     getAllHotels,
@@ -16,7 +15,7 @@ const router = express.Router();
 
 router  
     .route('/')
-    .get(deleteExpired(Hotel), getAllHotels)
+    .get(deleteExpired('Hotel'), getAllHotels)
     .post(createHotel);
 
 router

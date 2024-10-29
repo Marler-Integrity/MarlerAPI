@@ -35,5 +35,6 @@ const SubSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Sub', SubSchema);
+module.exports = SubSchema;
+// module.exports = mongoose.model('Sub', SubSchema);
 

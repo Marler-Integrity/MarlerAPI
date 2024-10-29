@@ -3,14 +3,16 @@ const asyncHandler = require('../../middleware/async');
 const ErrorResponse = require('../../utils/ErrorResponse');
 
 //models
-const ChecklistItem = require('../../models/checklist/ChecklistItem');
-const ItemCompleted = require('../../models/checklist/ItemCompleted');
+const ChecklistItemSchema = require('../../models/checklist/ChecklistItem');
+const ItemCompletedSchema = require('../../models/checklist/ItemCompleted');
 
 //@desc     Get All data
 //@route    GET /api/v1/checklist/
 //@access   Public
 exports.getAllChecklistItems = asyncHandler(async(req, res, next) => {
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         let checklistItems = await ChecklistItem.find();
 
         res.status(200).json({
@@ -28,9 +30,12 @@ exports.getAllChecklistItems = asyncHandler(async(req, res, next) => {
 //@access   Public
 exports.updateChecklistItem = asyncHandler(async(req, res, next) => {
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         let item = await ChecklistItem.findById(req.params.id);
 
         if(item['Last Done'] !== req.body['Last Done']){
+            const ItemCompleted = req.db.model('ItemCompleted', ItemCompletedSchema);
             await ItemCompleted.create({itemID: item._id, completedAt: req.body['Last Done']});
         }
 
@@ -60,6 +65,8 @@ exports.updateMultipleItems = asyncHandler(async(req, res, next) => {
     }));
     
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         const result = await ChecklistItem.bulkWrite(bulkOps);
 
         res.status(200).json({
@@ -77,6 +84,8 @@ exports.updateMultipleItems = asyncHandler(async(req, res, next) => {
 //@access   Public
 exports.createNewChecklistItem = asyncHandler(async(req, res, next) => {
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         let item = await ChecklistItem.create(req.body);
 
         if(!item) return next(new ErrorResponse(`Error Creating Checklist Item`, 400));
@@ -96,6 +105,8 @@ exports.createNewChecklistItem = asyncHandler(async(req, res, next) => {
 //@access   Public
 exports.deleteChecklistItem = asyncHandler(async(req, res, next) => {
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         let item = await ChecklistItem.findByIdAndDelete(req.params.id);
 
         if(!item) return next(new ErrorResponse(`Error deleting Checklist Item with ID ${req.params.id}`, 400));
@@ -123,6 +134,8 @@ exports.deleteArrayOfItems = asyncHandler(async(req, res, next) => {
     }));
     
     try {
+        const ChecklistItem = req.db.model('ChecklistItem', ChecklistItemSchema);
+
         const result = await ChecklistItem.bulkWrite(bulkOps);
 
         res.status(200).json({

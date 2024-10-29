@@ -40,4 +40,5 @@ const ChecklistItemSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model('ChecklistItem', ChecklistItemSchema);
+// module.exports = mongoose.model('ChecklistItem', ChecklistItemSchema);
+module.exports = ChecklistItemSchema;

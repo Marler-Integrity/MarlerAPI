@@ -3,8 +3,9 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
 const errorHandler = require('./middleware/error');
+const dbConnection = require('./middleware/dbConnection');
 
-const connectDB = require('./config/db');
+// const connectDB = require('./config/db');
 
 dotenv.config({ path: './config/config.env' });
 
@@ -13,9 +14,11 @@ const subs = require('./routes/Subs/subs');
 const hotels = require('./routes/Hotels/hotels');
 const users = require('./routes/Users/users');
 const checklist = require('./routes/Checklist/checklist');
+const employeeHoursRouter = require('./routes/EmployeeHours/employeeHours');
+
 
 // connect to DB
-connectDB();
+// connectDB();
 
 const app = express();
 
@@ -33,13 +36,16 @@ app.use(cors({
 //body parser
 app.use(express.json());
 
+//db connection middleware
+app.use(dbConnection);
+
 //route mounting
 app.use('/api/v1/subs', subs);
 app.use('/api/v1/hotels', hotels);
 app.use('/api/v1/users', users);
-
-//route mounting for checklist
 app.use('/api/v1/checklist', checklist);
+
+app.use('/api/v1/employeehours', employeeHoursRouter);
 
 //error handler
 app.use(errorHandler);

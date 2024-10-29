@@ -3,12 +3,13 @@ const asyncHandler = require('../../middleware/async');
 const ErrorResponse = require('../../utils/ErrorResponse');
 
 //models
-const User = require('../../models/Users/User');
+const UserSchema = require('../../models/Users/User');
 
 //@desc     Get all Users (for admin purposes)
 //@route    GET /api/v1/users/
 //@access   Public
 exports.getAllUsers = asyncHandler(async (req, res, next) => {
+    const User = req.db.model('User', UserSchema);
     let adminUsers = await User.find();
     
     res.status(200).json({
@@ -21,6 +22,7 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
 //@route    POST /api/v1/users/
 //@access   Public
 exports.createUser = asyncHandler(async (req, res, next) => {
+    const User = req.db.model('User', UserSchema);
     let adminUser = await User.create(req.body);
 
     res.status(200).json({
@@ -33,6 +35,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
 //@route    PUT /api/v1/users/[id]
 //@access   Public
 exports.updateUser = asyncHandler(async (req, res, next) => {
+    const User = req.db.model('User', UserSchema);
     let adminUser = await User.findByIdAndUpdate(req.params.id, req.body, {new: true});
 
     if(!adminUser){
@@ -50,6 +53,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 //@access   Public
 exports.deleteUser = asyncHandler(async (req, res, next) => {
     try {
+        const User = req.db.model('User', UserSchema);
         await User.findByIdAndDelete(req.params.id);
     } catch (error) {
         return next(new ErrorResponse(`Error deleting user with ID of ${req.params.id}`));
