@@ -6,11 +6,12 @@ const jwt = require('jsonwebtoken');
 
 /**
  * @description Login in an existing user
- * @route
- * @access
+ * @route POST /api/v1/employehours/auth/login
+ * @access Public endpoint - Anyone can try to login
  */
 exports.userLogin = asyncHandler(async (req, res, next) => {
     try {
+        //This creates the user model to be used with sequelize
         const User = createUserModel(req.db);
 
         const { Email, Password } = req.body;
@@ -33,8 +34,8 @@ exports.userLogin = asyncHandler(async (req, res, next) => {
         const payload = {
             UserID: user.UserID,
             Email: user.Email,
-            First_Name: user.First_Name,
-            Last_Name: user.Last_Name,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
             Role: user.Role
         }
 
@@ -46,7 +47,7 @@ exports.userLogin = asyncHandler(async (req, res, next) => {
         res.status(200).json({
             success: true,
             token
-        })
+        });
     } catch (error) {
         console.log(error);
         return next(new ErrorResponse('Server Error - userLogin', 500));
