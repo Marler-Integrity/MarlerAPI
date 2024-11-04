@@ -1,5 +1,5 @@
 const xlsx = require('xlsx');
-const getFileFromSharePoint = require('../sp/fetchSPFileContent');
+const {getFileFromSharePoint} = require('../sp/fetchSPContent');
 
 exports.getSAPRefExcelFile = async() => {
     const fileContent = await getFileFromSharePoint();

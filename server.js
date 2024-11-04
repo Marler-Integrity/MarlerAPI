@@ -16,6 +16,7 @@ const users = require('./routes/Users/users');
 const checklist = require('./routes/Checklist/checklist');
 const employeeHoursRouter = require('./routes/EmployeeHours/employeeHours');
 const getSAPRef = require('./middleware/EmployeeHours/getSAPRef');
+const getJobsFromSP = require('./middleware/EmployeeHours/getJobsFromSP');
 
 
 // connect to DB
@@ -46,8 +47,9 @@ app.use('/api/v1/hotels', hotels);
 app.use('/api/v1/users', users);
 app.use('/api/v1/checklist', checklist);
 
-app.use('/api/v1/employeehours', getSAPRef, employeeHoursRouter);
+// app.use('/api/v1/employeehours', getSAPRef, employeeHoursRouter);
 // app.use('/api/v1/employeehours', employeeHoursRouter);
+app.use('/api/v1/employeehours', getJobsFromSP, employeeHoursRouter);
 
 //error handler
 app.use(errorHandler);
