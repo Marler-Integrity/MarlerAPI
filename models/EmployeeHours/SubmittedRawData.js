@@ -8,16 +8,16 @@ const createSubmittedRawDataModel = (dbInstance) => {
             primaryKey: true,
             autoIncrement: true
         },
-        JobID: {
+        JobID: { //this is the Job ID for Billable items
             type: DataTypes.INTEGER
         },
-        OptionalJobNumberAndName: {
+        JobName: {
             type: DataTypes.STRING
         },
-        OptionalDescription: {
+        Description: {
             type: DataTypes.STRING
         },
-        SubCategoryID: {
+        NumHours: {
             type: DataTypes.INTEGER
         },
         Notes: {

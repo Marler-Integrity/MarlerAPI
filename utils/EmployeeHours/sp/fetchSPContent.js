@@ -31,7 +31,7 @@ exports.getFolderNamesFromSharePoint = async () => {
 
     return folders;
   } catch (error) {
-
+    console.log(error);
   }
 }
 

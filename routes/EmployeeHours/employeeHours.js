@@ -4,6 +4,7 @@ const { getAllPeople } = require('../../controllers/EmployeeHours/resources/peop
 const { getAllJobs } = require('../../controllers/EmployeeHours/resources/jobs');
 const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
+const { submitShopHours } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 
 const router = express.Router();
 
@@ -18,6 +19,10 @@ router
 router
     .route('/jobs')
     .get(getAllJobs)
+
+router
+    .route('/shop/submit')
+    .post(submitShopHours)
 
 router
     .route('/import/internaljobs')

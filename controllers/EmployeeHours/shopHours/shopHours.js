@@ -4,6 +4,7 @@ const createSubmittedRawDataModel = require("../../../models/EmployeeHours/Submi
 const ErrorResponse = require("../../../utils/ErrorResponse");
 
 
+
 exports.submitShopHours = asyncHandler(async (req, res, next) => {
     let t = await req.db.transaction()
     try {
@@ -17,8 +18,16 @@ exports.submitShopHours = asyncHandler(async (req, res, next) => {
 
         let masterEntry = null;
         try {
-            masterEntry = await MasterRawEntry.create({ EntryDate, PeopleID }, { transaction: t });
+            console.log(EntryDate)
+            const formatSQLDate = (date) => {
+                // console.log(date)
+                // const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+                return date.toISOString();
+              };
+            
+            masterEntry = await MasterRawEntry.create({ EntryDate: formatSQLDate(new Date(EntryDate)), PeopleID }, { transaction: t });
         } catch (error) {
+            console.log(error)
             throw new Error(`Error Creating Master Raw Entry - ${error.message}`);
         }
 

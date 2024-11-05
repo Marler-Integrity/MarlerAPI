@@ -27,6 +27,7 @@ const getMssqlConnection = async() => {
                     encrypt: true
                 }
             },
+            timezone: 'Z',
             pool: {
                 max: 10,
                 min: 0,
