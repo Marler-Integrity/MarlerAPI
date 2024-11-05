@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+
 const sql = require('mssql');
 const { Sequelize } = require('sequelize');
+
 
 let mongoConnection;
 const getMongoConnection = () => {
@@ -21,6 +23,7 @@ const getMssqlConnection = async() => {
         sqlPool = new Sequelize(process.env.MSSQL_DB, process.env.MSSQL_USER, process.env.MSSQL_PWD, {
             host: process.env.MSSQL_SERVER,
             port: 1433,
+
             dialect: 'mssql',
             dialectOptions: {
                 options: {
@@ -28,11 +31,19 @@ const getMssqlConnection = async() => {
                 }
             },
             timezone: 'Z',
+
             pool: {
                 max: 10,
                 min: 0,
                 idleTimeoutMillis: 30000
-            }
+            },
+            dialect: 'mssql',
+            dialectOptions: {
+                options: {
+                    encrypt: true
+                }
+            },
+            logging: true
         });
     }
     return sqlPool
