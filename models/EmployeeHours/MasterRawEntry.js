@@ -17,7 +17,8 @@ const createMasterRawEntryModel = (dbInstance) => {
             allowNull: false
         }
     }, {
-        timstamps: false
+        tableName: 'MasterRawEntry',
+        timestamps: false
     });
 
     return MasterRawEntry;

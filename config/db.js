@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-const {Sequelize} = require("sequelize")
+
+const sql = require('mssql');
+const { Sequelize } = require('sequelize');
+
 
 let mongoConnection;
 const getMongoConnection = () => {
@@ -20,6 +23,15 @@ const getMssqlConnection = async() => {
         sqlPool = new Sequelize(process.env.MSSQL_DB, process.env.MSSQL_USER, process.env.MSSQL_PWD, {
             host: process.env.MSSQL_SERVER,
             port: 1433,
+
+            dialect: 'mssql',
+            dialectOptions: {
+                options: {
+                    encrypt: true
+                }
+            },
+            timezone: 'Z',
+
             pool: {
                 max: 10,
                 min: 0,
@@ -38,14 +50,3 @@ const getMssqlConnection = async() => {
 }
 
 module.exports = {getMongoConnection, getMssqlConnection};
-
-// const connectDB = async () => {
-//     const conn = await mongoose.connect(process.env.COSMOSDB_URI, {
-//         // useCreateIndex: true,
-//         // useFindAndModify: false,
-//         useNewUrlParser: true,
-//         useUnifiedTopology: true
-//     });
-
-//     console.log(`COSMOS DB Connected ${conn.connection.host}`);
-// }

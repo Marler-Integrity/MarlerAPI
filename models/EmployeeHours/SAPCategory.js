@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 
 const createSAPCategoryModel = (dbInstance) => {
     const SAPCategory = dbInstance.define('SAPCategory', {
-        SAPCategoryID:  {
+        CategoryID:  {
             type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true,
@@ -15,8 +15,17 @@ const createSAPCategoryModel = (dbInstance) => {
         CategoryNumber: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        SubCategoryName: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        SubCategoryNumber: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
     }, {
+        tableName: 'SAPCategory',
         timestamps: false
     });
     

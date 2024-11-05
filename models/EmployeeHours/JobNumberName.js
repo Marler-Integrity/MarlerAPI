@@ -12,9 +12,13 @@ const createJobNumberNameModel = (dbInstance) => {
             type: DataTypes.INTEGER
         },
         JobName: {
-            types: DataTypes.STRING
+            type: DataTypes.STRING
+        },
+        Active: {
+            type: DataTypes.BOOLEAN
         }
     }, {
+        tableName: 'JobNumberName',
         timestamps: false
     });
     return JobNumberName;
