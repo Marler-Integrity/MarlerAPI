@@ -15,6 +15,10 @@ const createMasterRawEntryModel = (dbInstance) => {
         PeopleID: {
             type: DataTypes.INTEGER,
             allowNull: false
+        },
+        Locked: {
+            type: DataTypes.BOOLEAN,
+            default: false
         }
     }, {
         tableName: 'MasterRawEntry',
