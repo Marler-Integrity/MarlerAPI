@@ -63,49 +63,56 @@ exports.submitShopHours = asyncHandler(async (req, res, next) => {
  */
 exports.getAllEntries = asyncHandler(async (req, res, next) => {
 
-    //Step 1: set up models
+    //set up models
     const MasterRawEntry = createMasterRawEntryModel(req.db);
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
     const People = createPeopleModel(req.db);
 
-    // Step 2: get all master entries - assuming that old master entries will be archived and these are all current
-    const masterRawEntries = await MasterRawEntry.findAll({raw:true});
+    if (!MasterRawEntry.associations.SubmittedRawData) {
+        MasterRawEntry.hasMany(SubmittedRawData, { foreignKey: 'MasterID' });
+        SubmittedRawData.belongsTo(MasterRawEntry, { foreignKey: 'MasterID' });
+        MasterRawEntry.belongsTo(People, { foreignKey: 'PeopleID', targetKey: 'PersonID' });
+    }
 
-    // Step 3: get peopleIds and masterIds from masterRawEntries
-    const peopleIds = [...new Set(masterRawEntries.map(entry => entry.PeopleID))]; 
-    const masterIds = masterRawEntries.map(entry => entry.MasterID);
-    
-    // Step 4: get people and submittedRawData
-    const [people, submittedData] = await Promise.all([
-        People.findAll({
-            where: { PersonID: peopleIds },
-            attributes: ['FirstName', 'LastName', 'PersonID'],
-            raw: true,
-        }),
-        SubmittedRawData.findAll({
-            where: { MasterID: masterIds },
-            raw: true,
-        }),
-    ]);
+    //get submittedRawData and people for each masterRawEntry
+    const employeeMasterEntries = await MasterRawEntry.findAll({
+        include: [
+            {
+                model: SubmittedRawData,
+                required: false
+            },
+            {
+                model: People,
+                attributes: ['FirstName', 'LastName', 'PersonID'],
 
-    // Step 5: create result object of submitted raw entries, with person data and entry date from master entry
-    const result = submittedData.map(entry => {
-
-        const masterEntry = masterRawEntries.find(masterEntry => masterEntry.MasterID === entry.MasterID)
-        const person = people.find(person => person.PersonID === masterEntry.PeopleID)
- 
-        return {
-            ...entry,
-            ...person,
-            EntryDate: masterEntry.EntryDate
-        };
+            }
+        ],
     });
+
+    //format data to get array of submitted raw entries
+    const submittedDataArray = employeeMasterEntries.reduce((acc, masterEntry) => {
+        const masterData = masterEntry.toJSON(); 
+        const { SubmittedRawData: submittedDataItems, ...masterDetails } = masterData;
+
+        // for each SubmittedRawData item, attach the master and Person details
+        const employeeEntries = submittedDataItems.map(submittedData => ({
+            ...submittedData,
+            MasterID: masterDetails.MasterID,
+            EntryDate: masterDetails.EntryDate,
+            FirstName: masterDetails.Person.FirstName,
+            LastName: masterDetails.Person.LastName,
+            PersonID: masterDetails.Person.PersonID,
+        }));
+    
+        // accumulate all entries
+        return acc.concat(employeeEntries);
+    }, []);
 
     try {
         
         res.status(200).json({
             success: true,
-            data: result
+            data: submittedDataArray
         });
     } catch (error) {
         console.log(error)
