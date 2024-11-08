@@ -25,6 +25,21 @@ const createSubmittedRawDataModel = (dbInstance) => {
         },
         MasterID: {
             type: DataTypes.INTEGER
+        },
+        EntryDate: {
+            type: DataTypes.DATE
+        },
+        PeopleID: {
+            type: DataTypes.INTEGER
+        },
+        Locked: {
+            type: DataTypes.BOOLEAN
+        },
+        Submitted: {
+            type: DataTypes.BOOLEAN
+        },
+        SubmittedAt: {
+            type: DataTypes.DATE
         }
     }, {
         timestamps: false
