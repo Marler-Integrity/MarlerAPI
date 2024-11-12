@@ -24,7 +24,7 @@ const createSubmittedRawDataModel = (dbInstance) => {
             type: DataTypes.STRING
         },
         MasterID: {
-            type: DataTypes.INTEGER
+            type: DataTypes.STRING
         },
         EntryDate: {
             type: DataTypes.DATE
@@ -33,10 +33,12 @@ const createSubmittedRawDataModel = (dbInstance) => {
             type: DataTypes.INTEGER
         },
         Locked: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         },
         Submitted: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         },
         SubmittedAt: {
             type: DataTypes.DATE
