@@ -4,7 +4,7 @@ const { getAllPeople } = require('../../controllers/EmployeeHours/resources/peop
 const { getAllJobs } = require('../../controllers/EmployeeHours/resources/jobs');
 const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
-const { submitShopHours, getEmployeeHourSubmissions } = require('../../controllers/EmployeeHours/shopHours/shopHours');
+const { submitShopHours, getEmployeeHourSubmissions, updateSubmissions, deleteEntry } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 
 const router = express.Router();
 
@@ -24,6 +24,14 @@ router
     .route('/shop/submit')
     .post(submitShopHours)
 
+router
+    .route('/shop/submissions')
+    .post(updateSubmissions)
+
+router
+    .route('/shop/submissions/delete/:srdid')
+    .delete(deleteEntry)
+     
 router
     .route('/shop/submissions/:peopleid')
     .get(getEmployeeHourSubmissions)
