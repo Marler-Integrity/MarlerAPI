@@ -1,7 +1,7 @@
-const getGraphClient = require("./msGraphClient");
+const getSPGraphClient = require("./spGraphClient");
 
 exports.getFileFromSharePoint = async () => {
-  const client = await getGraphClient();
+  const client = await getSPGraphClient();
   try {
     // Access the file in SharePoint
     const fileContent = await client
@@ -16,7 +16,7 @@ exports.getFileFromSharePoint = async () => {
 }
 
 exports.getFolderNamesFromSharePoint = async () => {
-  const client = await getGraphClient();
+  const client = await getSPGraphClient();
 
   try {
     // Get the list of items in the specified folder path
@@ -36,7 +36,7 @@ exports.getFolderNamesFromSharePoint = async () => {
 }
 
 exports.getListItemsFromSharePoint = async () => {
-  const client = await getGraphClient();
+  const client = await getSPGraphClient();
   try {
     // Fetch the list items
     const listItems = await client
