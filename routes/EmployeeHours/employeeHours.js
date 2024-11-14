@@ -7,7 +7,7 @@ const { getAllCategories } = require('../../controllers/EmployeeHours/resources/
 const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
 const { submitShopHours, getAllEntries, getEmployeeHourSubmissions } = require('../../controllers/EmployeeHours/shopHours/shopHours');
-const { autoSaveWorkingData } = require('../../controllers/EmployeeHours/shopHours/workingData');
+const { saveWorkingData, getWorkingData } = require('../../controllers/EmployeeHours/shopHours/workingData');
 
 const { userLogin, userRegister } = require('../../controllers/EmployeeHours/auth/auth');
 
@@ -43,8 +43,9 @@ router
     .post(submitShopHours)
 
 router
-    .route('/shop/working-data/autosave')
-    .post(autoSaveWorkingData)
+    .route('/shop/working-data')
+    .post(saveWorkingData)
+    .get(getWorkingData)
 
 router
     .route('/shop/submissions/:peopleid')
