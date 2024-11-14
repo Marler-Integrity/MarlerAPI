@@ -15,12 +15,12 @@ const createWorkingDataModel = (dbInstance) => {
             type: DataTypes.STRING,
        },
        JobName: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
        },
        NumHours: {
             type: DataTypes.TINYINT
        },
-       EmployeeDescription: {
+       Description: {
             type: DataTypes.STRING,
        },
        SAPCategory: {
@@ -30,13 +30,10 @@ const createWorkingDataModel = (dbInstance) => {
             type: DataTypes.STRING,
        },
        Regular: {
-            type: DataTypes.BOOLEAN,
+          type: DataTypes.INTEGER,
        },
        OT: {
-            type: DataTypes.BOOLEAN,
-       },
-       Sub: {
-            type: DataTypes.BOOLEAN,
+          type: DataTypes.INTEGER,
        },
        SRDID: {
             type: DataTypes.INTEGER,
