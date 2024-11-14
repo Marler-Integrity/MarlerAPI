@@ -1,6 +1,7 @@
 const asyncHandler = require("../../../middleware/async");
 // const createMasterRawEntryModel = require("../../../models/EmployeeHours/MasterRawEntry");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
+const { getUserProfile } = require("../../../utils/EmployeeHours/azure/userProfiles");
 const ErrorResponse = require("../../../utils/ErrorResponse");
 const { v4: uuidv4 } = require('uuid');
 
@@ -113,6 +114,7 @@ exports.deleteEntry = asyncHandler(async(req, res, next) => {
  * @access private - user must be logged in to see hours
  */
 exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
+    getUserProfile('bryan.lilly@marlerintegrity.com')
     const peopleID = req.params.peopleid;
     try {
         const SubmittedRawData = createSubmittedRawDataModel(req.db);
