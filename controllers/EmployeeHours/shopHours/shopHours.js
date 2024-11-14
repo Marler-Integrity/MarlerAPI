@@ -79,61 +79,53 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @description gets all active entries
+ * @author Julia Hack
+ * @date November 13, 2024
+ * @route  GET /api/v1/employeehours/shop/entries
+ * @description gets all raw entries
+ * @access private - management user must be logged in to see entries
  */
 exports.getAllEntries = asyncHandler(async (req, res, next) => {
-
-    //set up models
-    const MasterRawEntry = createMasterRawEntryModel(req.db);
-    const SubmittedRawData = createSubmittedRawDataModel(req.db);
-    const People = createPeopleModel(req.db);
-
-    if (!MasterRawEntry.associations.SubmittedRawData) {
-        MasterRawEntry.hasMany(SubmittedRawData, { foreignKey: 'MasterID' });
-        SubmittedRawData.belongsTo(MasterRawEntry, { foreignKey: 'MasterID' });
-        MasterRawEntry.belongsTo(People, { foreignKey: 'PeopleID', targetKey: 'PersonID' });
-    }
-
-    //get submittedRawData and people for each masterRawEntry
-    const employeeMasterEntries = await MasterRawEntry.findAll({
-        include: [
-            {
-                model: SubmittedRawData,
-                required: false
-            },
-            {
-                model: People,
-                attributes: ['FirstName', 'LastName', 'PersonID'],
-
-            }
-        ],
-    });
-
-    //format data to get array of submitted raw entries
-    const submittedDataArray = employeeMasterEntries.reduce((acc, masterEntry) => {
-        const masterData = masterEntry.toJSON(); 
-        const { SubmittedRawData: submittedDataItems, ...masterDetails } = masterData;
-
-        // for each SubmittedRawData item, attach the master and Person details
-        const employeeEntries = submittedDataItems.map(submittedData => ({
-            ...submittedData,
-            MasterID: masterDetails.MasterID,
-            EntryDate: masterDetails.EntryDate,
-            FirstName: masterDetails.Person.FirstName,
-            LastName: masterDetails.Person.LastName,
-            PersonID: masterDetails.Person.PersonID,
-        }));
-    
-        // accumulate all entries
-        return acc.concat(employeeEntries);
-    }, []);
-
     try {
-        
+
+        //set up models
+        const SubmittedRawData = createSubmittedRawDataModel(req.db);
+        const People = createPeopleModel(req.db);
+
+        if (!SubmittedRawData.associations.People) {
+            SubmittedRawData.belongsTo(People, { foreignKey: 'PeopleID', targetKey: 'PersonID' });
+        }
+
+        //get submittedRawData and people for each masterRawEntry
+        const submittedRawData = await SubmittedRawData.findAll({
+            include: [
+
+                {
+                    model: People,
+                    attributes: ['FirstName', 'LastName'],
+
+                }
+            ],
+
+        });
+
+        //format entries to include employee's first and last name on same level as the rest of the data
+        const submittedDataArray = submittedRawData.map((entry) =>{
+            const entryData = entry.toJSON()
+            const {Person, ...entryDetails} = entryData
+
+            return {
+                ...entryDetails,
+                FirstName: Person.FirstName,
+                LastName: Person.LastName
+            }
+        })
+
         res.status(200).json({
             success: true,
             data: submittedDataArray
         });
+        
     } catch (error) {
         console.log(error)
         return next(new ErrorResponse(`Server Error - getAllEntries - ${error.message}`, 500));
