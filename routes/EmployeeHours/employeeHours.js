@@ -8,6 +8,7 @@ const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
 const { submitShopHours, getAllEntries, getEmployeeHourSubmissions } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 const { saveWorkingData, getWorkingData } = require('../../controllers/EmployeeHours/shopHours/workingData');
+const { exportWorkingDataToExcel } = require('../../controllers/EmployeeHours/exportExcel/exportExcel');
 
 const { userLogin, userRegister } = require('../../controllers/EmployeeHours/auth/auth');
 
@@ -46,6 +47,10 @@ router
     .route('/shop/working-data')
     .post(saveWorkingData)
     .get(getWorkingData)
+
+router
+    .route('/manager-verification/export-excel')
+    .post(exportWorkingDataToExcel)
 
 router
     .route('/shop/submissions/:peopleid')
