@@ -8,6 +8,8 @@ const ErrorResponse = require("../../../utils/ErrorResponse");
 const fs = require('fs');
 const XLSX = require('xlsx');
 const path = require('path');
+//utils
+const { formatShopManagerData, formatProjectManagerData, styleWorksheetColumns, formatDateColumnInSheet} = require("../../../utils/EmployeeHours/excelExport/exportWorkingDataUtils")
 
 exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     
@@ -24,12 +26,10 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     const People = createPeopleModel(req.db);
     const SAPCategory = createSAPCategoryModel(req.db);
 
-   
-      
     try {
 
         //get all people and SAP categories
-        //for quick reference, put in maps
+        //for quicker reference, put in maps
         const allPeople = await People.findAll({
             attributes: ["PersonID", "RegSAPCode", "OTSAPCode"],
             raw: true
@@ -51,16 +51,9 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
             return map;
         }, {})
 
-        console.log(peopleCodesMap)
-        console.log(SAPCategoryMap)
-
-
+        //format the data with SAP codes
         const formattedShopManagerData = formatShopManagerData(workingData, peopleCodesMap, SAPCategoryMap)
         const formattedProjectManagerData = formatProjectManagerData(workingData, SAPCategoryMap)
-
-        console.log(formattedShopManagerData)
-        console.log(formattedProjectManagerData)
-
 
          // create file path and directory if it doesn't exist
         const uploadDir = path.join(__dirname, '..', 'temp_uploads');
@@ -70,14 +63,21 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
             fs.mkdirSync(uploadDir);
         }
 
-        //create a new workbook and add a new worksheet
+        //create a new workbook and add the worksheets
         const workbook = XLSX.utils.book_new();
         const shopManagerWorksheet = XLSX.utils.json_to_sheet(formattedShopManagerData);
         const projectManagerWorksheet = XLSX.utils.json_to_sheet(formattedProjectManagerData);
 
+        //format the dates in the shop manager sheet so they are not just strings
+        formatDateColumnInSheet(shopManagerWorksheet, 2)
+
+        //style the column widths
+        styleWorksheetColumns(shopManagerWorksheet, "ShopManager")
+        styleWorksheetColumns(projectManagerWorksheet, "ProjectManager")
+
         // append the worksheet to the workbook
-        XLSX.utils.book_append_sheet(workbook, shopManagerWorksheet, `ShopManager`);
-        XLSX.utils.book_append_sheet(workbook, projectManagerWorksheet, `ProjectManager`);
+        XLSX.utils.book_append_sheet(workbook, shopManagerWorksheet, "ShopManager");
+        XLSX.utils.book_append_sheet(workbook, projectManagerWorksheet, "ProjectManager");
 
         // write the workbook to the file
         XLSX.writeFile(workbook, shopHoursFilePath);
@@ -95,121 +95,9 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
                 throw new Error(unlinkErr)
             }
         });
-        // res.status(200).json({
-        //     success: true,
-        //     data: {
-        //         formattedShopManagerData,
-        //         formattedProjectManagerData
-        //     }
-        // });
         
     } catch (error) {
         console.error('Error creating the excel file:', error);
         return next(new ErrorResponse(500, `Server Error - exportWorkingDataToExcel - ${error.message}`));
     } 
 });
-
-const formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
-    const formattedData = data.flatMap(entry => {
-
-        const separatedEntries = []
-
-        if(!entry.SAPCategory) return separatedEntries
-
-        if(entry.Regular > 0 ){
-            separatedEntries.push({
-                "SubjobID": SAPCategoryMap[entry.SAPCategory].SubCategoryNumber,
-                "Staff": `${entry.FirstName} ${entry.LastName}`,
-                "Date": formatDate(entry.EntryDate),
-                "Time Type": "Standard",
-                "Quantity": entry.Regular,
-                "Non-Chargable": null,
-                "Item No.": String(peopleCodesMap[entry.PeopleID].RegSAPCode).padStart(5, 0)
-
-            })
-        }
-
-        if(entry.OT > 0 ){
-            separatedEntries.push({
-                "SubjobID": SAPCategoryMap[entry.SAPCategory].SubCategoryNumber,
-                "Staff": `${entry.FirstName} ${entry.LastName}`,
-                "Date": formatDate(entry.EntryDate),
-                "Time Type": "Overtime",
-                "Quantity": entry.OT,
-                "Non-Chargable": null,
-                "Item No.": String(peopleCodesMap[entry.PeopleID].OTSAPCode).padStart(5, 0)
-
-            })
-        }
-
-        return separatedEntries
-        
-    })
-    return formattedData
-}
-
-const formatProjectManagerData = (data, SAPCategoryMap) => {
-    //get all the non-billable entries those without a JobName
-
-    const nonBillable = []
-    const billable = []
-    
-    data.forEach(entry => {
-        const sapCategory = SAPCategoryMap[String(entry.SAPCategory)]
-        console.log("sapCategory")
-        
-        console.log(sapCategory)
-
-        console.log("entry")
-        console.log(entry)
-
-
-        if(!entry.JobName){
-            nonBillable.push({
-                "Employee Name": `${entry.FirstName} ${entry.LastName}`,
-                "Job Title": `${sapCategory.SubCategoryNumber} ${sapCategory.SubCategoryName}`,
-                "Job Name/Number": null,
-                "Billable/Non-billable": "Non-Billable",
-                "Hrs": entry.Regular,
-                "O.T Hrs": entry.OT,
-                "Equipment": entry.Notes
-            })
-        } else {
-            billable.push({
-                "Employee Name": `${entry.FirstName} ${entry.LastName}`,
-                "Job Title": null,
-                "Job Name/Number": entry.JobName,
-                "Billable/Non-billable": "Billable",
-                "Hrs": entry.Regular,
-                "O.T Hrs": entry.OT,
-                "Equipment": entry.Notes
-            })
-        }
-            
-    })
-
-    return [
-        ...nonBillable.sort((a, b) => a["Job Title"] - b["Job Title"]),
-        {},
-        ...billable.sort((a, b) => a["Job Name/Number"] - b["Job Name/Number"])
-      ]
-
-
-}
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    // const formattedDate = new Intl.DateTimeFormat('en-CA', {
-    //     year: 'numeric',
-    //     month: '2-digit',
-    //     day: '2-digit'
-    // }).format(date);
-
-    const formattedDate = new Intl.DateTimeFormat('en-GB', {
-        day: '2-digit',
-        month: 'short',  
-        year: '2-digit'
-    }).format(new Date());
-
-    return formattedDate;
-}
