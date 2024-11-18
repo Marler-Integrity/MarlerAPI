@@ -29,6 +29,12 @@ const createUserModel = (dbInstance) => {
         CreatedAt: {
             type: DataTypes.DATE
         },
+        Token: {
+            type: DataTypes.STRING
+        },
+        IsVerified: {
+            type: DataTypes.BOOLEAN
+        }
     } , {
         tableName: 'Users',
         timestamps: false

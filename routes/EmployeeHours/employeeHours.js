@@ -1,5 +1,6 @@
 const express = require('express');
-const { userLogin } = require('../../controllers/EmployeeHours/auth/auth');
+
+
 const { getAllPeople } = require('../../controllers/EmployeeHours/resources/people');
 const { getAllJobs } = require('../../controllers/EmployeeHours/resources/jobs');
 const upload = require('../../middleware/fileUpload');
@@ -14,6 +15,10 @@ const router = express.Router();
 router
     .route('/auth/login')
     .post(userLogin)
+    
+router
+    .route('/auth/register')
+    .post(userRegister)
 
 router
     .route('/auth/register/field')

@@ -1,5 +1,7 @@
 const asyncHandler = require("../../../middleware/async");
+const createPeopleModel = require("../../../models/EmployeeHours/People");
 const createUserModel = require("../../../models/EmployeeHours/User");
+const { getUserProfile } = require("../../../utils/EmployeeHours/azure/userProfiles");
 const ErrorResponse = require("../../../utils/ErrorResponse");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -7,29 +9,31 @@ const crypto = require('crypto');
 const { sendVerificationEmail } = require("../../../utils/EmployeeHours/email/sendVerificationEmail");
 
 /**
+ * @date Oct 30, 2024
+ * @author Bryan Lilly
  * @description Login in an existing user
- * @route POST /api/v1/employehours/auth/login
+ * @route POST /api/v1/employeehours/auth/login
  * @access Public endpoint - Anyone can try to login
- */
+ **/
 exports.userLogin = asyncHandler(async (req, res, next) => {
     try {
         //This creates the user model to be used with sequelize
-        const User = createUserModel(req.db);
+        const User = await createUserModel(req.db);
 
         const { Email, Password } = req.body;
 
-        let user = User.findOne({ where: { Email: Email } });
+        let user = await User.findOne({ where: { Email: Email } });
 
         if (!user) {
-            return next(new ErrorResponse(401, `Email is incorrect`));
+            return next(new ErrorResponse(`Email is incorrect`, 401));
         }
-        if (!user.IsActive) return next(new ErrorResponse(401, `Not Authorized - Inactive User`))
+        if (!user.IsActive) return next(new ErrorResponse(`Not Authorized - Inactive User`, 401))
 
         //check for matching passwords
         const pwMatch = await bcrypt.compare(Password, user.Password);
 
         if (!pwMatch) {
-            return next(new ErrorResponse(401, 'Password Incorrect'));
+            return next(new ErrorResponse('Password Incorrect', 401));
         }
 
         //jwt payload
@@ -130,46 +134,68 @@ exports.userRegister = asyncHandler(async (req, res, next) => {
  * 
  **/
 exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
+    const t = await req.db.transaction();
     try {
         const { Email, Password } = req.body;
 
         if(!Email || !Password) return next(new ErrorResponse(`Please Provide an Email and Password in Request`, 400))
 
+        //check if user already has account
+        const User = createUserModel(req.db);
+        let user = await User.findOne({where: {Email: Email}});
+        if(user) return next(new ErrorResponse(`You already have an account`, 400));
+
+        //get data from azure - compare last names to People table to get right profile
         const azureUserData = await getUserProfile(Email);
-
         const People = createPeopleModel(req.db);
-
         const person = await People.findOne({ where: { LastName: azureUserData.surname } });
 
         if (!person) return next(new ErrorResponse(`Could Not Find Your Name in Our System`, 404));
 
-        let token = crypto.randomBytes(32).toString("hex");
+        let token = crypto.randomBytes(32).toString("hex"); //token for verification
+        //create the user
+        try {
+            const hash = await bcrypt.hash(Password, 10);
+
+            user = await User.create({
+                Email: Email, 
+                Password: hash, 
+                FirstName: azureUserData.givenName, 
+                LastName: azureUserData.surname, 
+                Role: 'Field',
+                IsActive: true,
+                CreatedAt: new Date(),
+                Token: token,
+                IsVerified: false
+            }, {transaction: t})
+        } catch (error) {
+            // await t.rollback();
+            console.log(error);
+            throw new Error('Error Creating Account in User DB');
+        }
+        
+        //send verification email
         let verificationLink = `${process.env.SITE_URL}/verify-email/${token}`;
         const mailObject = {
             sendTo: Email,
             subject: `Verify Your Email Address`,
-            text: `${verificationLink}`,
-            html: getHTML(verificationLink)
+            plainText: `${verificationLink}`,
+            htmlContent: getHTML(verificationLink)
         }
 
         try {
             const result = await sendVerificationEmail(mailObject);
-            //hash password and set to object
-            const hash = await bcrypt.hash(Password, 10);
-            person.Password = hash;
-            person.Verified = false;
-            person.Email = Email;
-            
-            await person.save();
-
+            await t.commit();
             res.status(200).json({
                 success: true,
                 msg: `Please Verify Your Email Address`
             });
         } catch (error) {
+            // await t.rollback();
             throw error;
         }
     } catch (error) {
+        await t.rollback();
         console.log(error);
         return next(new ErrorResponse(`Server Error - fieldUserRegister - ${error.message}`));
     }
