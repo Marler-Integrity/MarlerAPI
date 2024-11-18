@@ -8,7 +8,7 @@ exports.getUserProfile = async(email) => {
 
         const user = await client.api(`/users/${email}`).get();
     
-        console.log(user);   
+        return user;
     } catch (error) {
         console.log(error);
     }

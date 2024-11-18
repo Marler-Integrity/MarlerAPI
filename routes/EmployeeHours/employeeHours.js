@@ -6,11 +6,18 @@ const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
 const { submitShopHours, getEmployeeHourSubmissions, updateSubmissions, deleteEntry } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 
+const { userLogin, userRegister, fieldUserRegister } = require('../../controllers/EmployeeHours/auth/auth');
+
+
 const router = express.Router();
 
 router
     .route('/auth/login')
     .post(userLogin)
+
+router
+    .route('/auth/register/field')
+    .post(fieldUserRegister)
 
 router
     .route('/people')
