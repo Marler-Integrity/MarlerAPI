@@ -25,7 +25,7 @@ exports.userLogin = asyncHandler(async (req, res, next) => {
         let user = await User.findOne({ where: { Email: Email } });
 
         if (!user) {
-            return next(new ErrorResponse(`Email is incorrect`, 401));
+            return next(new ErrorResponse(`Cannot Find Your Email Address - Try Again or Register for an Account`, 404));
         }
         if (!user.IsActive) return next(new ErrorResponse(`Not Authorized - Inactive User`, 401))
 
@@ -42,7 +42,8 @@ exports.userLogin = asyncHandler(async (req, res, next) => {
             Email: user.Email,
             FirstName: user.FirstName,
             LastName: user.LastName,
-            Role: user.Role
+            Role: user.Role,
+            PersonID: user.PersonID
         }
 
         const expiry = '8h'; //jwt expires in 8 hours
@@ -166,7 +167,8 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
                 IsActive: true,
                 CreatedAt: new Date(),
                 Token: token,
-                IsVerified: false
+                IsVerified: false,
+                PersonID: person.PersonID
             }, {transaction: t})
         } catch (error) {
             // await t.rollback();
@@ -205,27 +207,43 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
  * @date Nov 15, 2024
  * @author Bryan Lilly
  * @description Verify email address
- * @route POST /api/v1/employehours/auth/register/field/:verificationToken
+ * @route POST /api/v1/employehours/auth/register/field/verify-email/:verificationtoken
  * @access Public *user must have a marlerintegrity account for validation
  * 
  **/
-exports.verifyEmail = asyncHandler(async(reg, res, next) => {
+exports.verifyEmail = asyncHandler(async(req, res, next) => {
     try {
-        let token = req.params.verificationToken;
+        let token = req.params.verificationtoken;
+        
         if(!token) return next(new ErrorResponse(`Invalid Verification Link`, 400));
 
-        const People = createPeopleModel(req.db);
+        const User = createUserModel(req.db);
 
-        let person = await People.findOne({where: {Token: token, Verified: false}});
+        let user = await User.findOne({where: {Token: token}});
 
-        if(!person) return next(new ErrorResponse(`Invalid Verification Token - Try Again`, 400));
+        if(!user) return next(new ErrorResponse(`Invalid Verification Token - Try Again`, 400));
 
-        person.Verified = true;
-        await person.save();
+        user.IsVerified = true;
+        await user.save();
+
+        //jwt payload
+        const payload = {
+            UserID: user.UserID,
+            Email: user.Email,
+            FirstName: user.FirstName,
+            LastName: user.LastName,
+            Role: user.Role,
+            PersonID: user.PersonID
+        }
+
+        //never expires
+        //jwt token for authorization
+        const jwtToken = jwt.sign(payload, process.env.JWT_SECRET);
 
         res.status(200).json({
             success: true,
-            msg: `Email is Verified`
+            msg: `Email is Verified`,
+            token: jwtToken
         });
     } catch (error) {
         console.log(error);
@@ -297,7 +315,7 @@ const getHTML = (verificationLink) => {
                     <div class="content">
                         <p>Hello,</p>
                         <p>Thank you for signing up! Please verify your email address to complete the registration process.</p>
-                        <a href="{${verificationLink}}" class="cta-button">Verify Email Address</a>
+                        <a href="${verificationLink}" class="cta-button">Verify Email Address</a>
                         <p>If you did not create an account, please ignore this email.</p>
                     </div>
                     <div class="footer">

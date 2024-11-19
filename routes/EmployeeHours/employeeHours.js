@@ -7,7 +7,7 @@ const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
 const { submitShopHours, getEmployeeHourSubmissions, updateSubmissions, deleteEntry } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 
-const { userLogin, userRegister, fieldUserRegister } = require('../../controllers/EmployeeHours/auth/auth');
+const { userLogin, userRegister, fieldUserRegister, verifyEmail } = require('../../controllers/EmployeeHours/auth/auth');
 
 
 const router = express.Router();
@@ -23,6 +23,10 @@ router
 router
     .route('/auth/register/field')
     .post(fieldUserRegister)
+
+router
+    .route('/auth/register/field/verify-email/:verificationtoken')
+    .get(verifyEmail)
 
 router
     .route('/people')

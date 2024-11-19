@@ -34,6 +34,9 @@ const createUserModel = (dbInstance) => {
         },
         IsVerified: {
             type: DataTypes.BOOLEAN
+        },
+        PersonID: {
+            type: DataTypes.INTEGER
         }
     } , {
         tableName: 'Users',

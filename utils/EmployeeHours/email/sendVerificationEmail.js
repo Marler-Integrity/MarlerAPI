@@ -16,7 +16,6 @@ const transporter = nodemailer.createTransport({
 
 exports.sendVerificationEmail = async ({sendTo, subject, htmlContent, plaintText}) => {
     try {
-        console.log(sendTo, subject, htmlContent, plaintText)
         let info = await transporter.sendMail({
             from: '"Marler IT Support" <it.support@marlerintegrity.com>', // sender address
             to: sendTo, // recipient address
