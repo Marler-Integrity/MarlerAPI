@@ -85,7 +85,7 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
  * @description gets all raw entries
  * @access private - management user must be logged in to see entries
  */
-exports.getAllEntries = asyncHandler(async (req, res, next) => {
+exports.getUnlockedEntries = asyncHandler(async (req, res, next) => {
     try {
 
         //set up models
@@ -98,6 +98,9 @@ exports.getAllEntries = asyncHandler(async (req, res, next) => {
 
         //get submittedRawData and people for each masterRawEntry
         const submittedRawData = await SubmittedRawData.findAll({
+            where: {
+                Locked: false
+            },
             include: [
 
                 {

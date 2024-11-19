@@ -6,7 +6,7 @@ const { getAllJobs } = require('../../controllers/EmployeeHours/resources/jobs')
 const { getAllCategories } = require('../../controllers/EmployeeHours/resources/categories')
 const upload = require('../../middleware/fileUpload');
 const { importInternalJobList } = require('../../controllers/EmployeeHours/imports/importData');
-const { submitShopHours, getAllEntries, getEmployeeHourSubmissions } = require('../../controllers/EmployeeHours/shopHours/shopHours');
+const { submitShopHours, getUnlockedEntries, getEmployeeHourSubmissions } = require('../../controllers/EmployeeHours/shopHours/shopHours');
 const { saveWorkingData, getWorkingData } = require('../../controllers/EmployeeHours/shopHours/workingData');
 const { exportWorkingDataToExcel } = require('../../controllers/EmployeeHours/exportExcel/exportExcel');
 
@@ -37,7 +37,7 @@ router
 
 router
     .route('/shop/entries')
-    .get(getAllEntries)
+    .get(getUnlockedEntries)
 
 router
     .route('/shop/submit')
