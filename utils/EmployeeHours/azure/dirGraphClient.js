@@ -1,10 +1,10 @@
 const { Client } = require("@microsoft/microsoft-graph-client");
-const getAccessToken = require("./azureAuth");
+const {getDirectoryAccessToken} = require("../sp/azureAuth");
 
 require("isomorphic-fetch"); // Needed for node-fetch compatibility
 
-async function getGraphClient() {
-  const accessToken = await getAccessToken();
+async function getDIRGraphClient() {
+  const accessToken = await getDirectoryAccessToken();
 
   const client = Client.init({
     authProvider: (done) => {
@@ -15,5 +15,5 @@ async function getGraphClient() {
   return client;
 }
 
-module.exports = getGraphClient;
+module.exports = getDIRGraphClient;
 

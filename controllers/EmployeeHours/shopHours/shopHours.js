@@ -1,6 +1,9 @@
 const asyncHandler = require("../../../middleware/async");
 // const createMasterRawEntryModel = require("../../../models/EmployeeHours/MasterRawEntry");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
+const {
+  getUserProfile,
+} = require("../../../utils/EmployeeHours/azure/userProfiles");
 const createPeopleModel = require("../../../models/EmployeeHours/People");
 const ErrorResponse = require("../../../utils/ErrorResponse");
 const { v4: uuidv4 } = require("uuid");
@@ -56,20 +59,82 @@ exports.submitShopHours = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @route  POST /api/v1/employeehours/shop/submissions
+ * @access private - user must be logged in to update submissions
+ */
+exports.updateSubmissions = asyncHandler(async (req, res, next) => {
+  let t = await req.db.transaction();
+  try {
+    const entries = req.body;
+
+    if (!entries)
+      return next(new ErrorResponse(`No Entries Present in Request`, 400));
+
+    const SubmittedRawData = createSubmittedRawDataModel(req.db);
+
+    for (let entry of entries) {
+      await SubmittedRawData.update(
+        { ...entry },
+        {
+          where: { SRDID: entry.SRDID },
+          transaction: t,
+        }
+      );
+    }
+    await t.commit();
+
+    res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    await t.rollback();
+    console.log(error);
+    return next(
+      new ErrorResponse(
+        `Server Error - updateSubmissions - ${error.message}`,
+        500
+      )
+    );
+  }
+});
+
+/**
+ * @route  DELETE /api/v1/employeehours/shop/submissions/delete/:srdid
+ * @access private - user must be logged in to see hours
+ */
+exports.deleteEntry = asyncHandler(async (req, res, next) => {
+  try {
+    const srdid = req.params.srdid;
+    if (!srdid) return next(new ErrorResponse(`No SRDID in request`, 400));
+
+    const SubmittedRawData = createSubmittedRawDataModel(req.db);
+
+    try {
+      let result = await SubmittedRawData.destroy({ where: { SRDID: srdid } });
+    } catch (error) {
+      throw new Error("Error Deleting Entry");
+    }
+
+    res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(
+      new ErrorResponse(`Server Error - deleteEntry - ${error.message}`)
+    );
+  }
+});
+
+/**
  * @route  POST /api/v1/employeehours/shop/submissions/:peopleid
  * @access private - user must be logged in to see hours
  */
 exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
+  getUserProfile("bryan.lilly@marlerintegrity.com");
   const peopleID = req.params.peopleid;
   try {
-    // const MasterRawEntry = createMasterRawEntryModel(req.db);
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
-
-    // Define associations
-    // if (!MasterRawEntry.associations.SubmittedRawData) {
-    //     MasterRawEntry.hasMany(SubmittedRawData, { foreignKey: 'MasterID' });
-    //     SubmittedRawData.belongsTo(MasterRawEntry, { foreignKey: 'MasterID' });
-    // }
 
     let employeeHourSubmissions = await SubmittedRawData.findAll({
       where: { PeopleID: peopleID },
