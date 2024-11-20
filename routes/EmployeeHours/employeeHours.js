@@ -33,7 +33,11 @@ const {
   userRegister,
 } = require("../../controllers/EmployeeHours/auth/auth");
 
+
+const { userLogin, userRegister, fieldUserRegister, verifyEmail } = require('../../controllers/EmployeeHours/auth/auth');
+
 const router = express.Router();
+
 
 router.route("/auth/login").post(userLogin);
 
@@ -41,7 +45,21 @@ router.route("/auth/register").post(userRegister);
 
 router.route("/people").get(getAllPeople);
 
+
+router
+    .route('/auth/register/field')
+    .post(fieldUserRegister)
+
+router
+    .route('/auth/register/field/verify-email/:verificationtoken')
+    .get(verifyEmail)
+
+router
+    .route('/people')
+    .get(getAllPeople)
+
 router.route("/jobs").get(getAllJobs);
+
 
 router.route("/categories").get(getAllCategories);
 

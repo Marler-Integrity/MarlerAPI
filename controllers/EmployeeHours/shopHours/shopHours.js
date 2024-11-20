@@ -1,6 +1,7 @@
 const asyncHandler = require("../../../middleware/async");
 // const createMasterRawEntryModel = require("../../../models/EmployeeHours/MasterRawEntry");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
+const { sendVerificationEmail } = require("../../../utils/EmployeeHours/email/sendVerificationEmail");
 const {
   getUserProfile,
 } = require("../../../utils/EmployeeHours/azure/userProfiles");
@@ -131,6 +132,18 @@ exports.deleteEntry = asyncHandler(async (req, res, next) => {
  * @access private - user must be logged in to see hours
  */
 exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
+
+    // getUserProfile('bryan.lilly@marlerintegrity.com')
+
+    
+    const peopleID = req.params.peopleid;
+    try {
+        const SubmittedRawData = createSubmittedRawDataModel(req.db);
+
+        let employeeHourSubmissions = await SubmittedRawData.findAll({
+            where: { PeopleID: peopleID }
+        });
+
   getUserProfile("bryan.lilly@marlerintegrity.com");
   const peopleID = req.params.peopleid;
   try {
@@ -153,6 +166,7 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
     );
   }
 });
+
 
 /**
  * @author Julia Hack
