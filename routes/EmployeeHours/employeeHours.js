@@ -28,11 +28,6 @@ const {
   exportWorkingDataToExcel,
 } = require("../../controllers/EmployeeHours/exportExcel/exportExcel");
 
-const {
-  userLogin,
-  userRegister,
-} = require("../../controllers/EmployeeHours/auth/auth");
-
 
 const { userLogin, userRegister, fieldUserRegister, verifyEmail } = require('../../controllers/EmployeeHours/auth/auth');
 
