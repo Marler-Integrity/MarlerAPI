@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - marlerAPI
+name: Build and deploy Node.js app to Azure Web App - marlerapi-dev
 
 on:
   push:
@@ -51,15 +51,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_050B6B6B3D2A470B89B30AAA9AB20BDE }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_66D9F322CF064554BF1D0FA3F3B2D81B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_40B98F39A9524B33AEAC2B9C0A1702DA }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_60432A9CED6641D7B896102DC60B99DA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0F8911AEA7C64F8DA803C0D5AE14152A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_573B43FB9738443EA58B82686349C588 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'marlerAPI'
+          app-name: 'marlerapi-dev'
           slot-name: 'Production'
           package: .
           
