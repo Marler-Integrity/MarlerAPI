@@ -132,19 +132,6 @@ exports.deleteEntry = asyncHandler(async (req, res, next) => {
  * @access private - user must be logged in to see hours
  */
 exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
-
-    // getUserProfile('bryan.lilly@marlerintegrity.com')
-
-    
-    const peopleID = req.params.peopleid;
-    try {
-        const SubmittedRawData = createSubmittedRawDataModel(req.db);
-
-        let employeeHourSubmissions = await SubmittedRawData.findAll({
-            where: { PeopleID: peopleID }
-        });
-
-  getUserProfile("bryan.lilly@marlerintegrity.com");
   const peopleID = req.params.peopleid;
   try {
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
@@ -177,7 +164,7 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
  */
 exports.getUnlockedEntries = asyncHandler(async (req, res, next) => {
   try {
-    //set up models
+//set up models
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
     const People = createPeopleModel(req.db);
 
