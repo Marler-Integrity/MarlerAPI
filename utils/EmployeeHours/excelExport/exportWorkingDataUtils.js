@@ -1,5 +1,3 @@
-const XLSX = require("xlsx");
-
 exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
   const formattedData = data.flatMap((entry) => {
     const separatedEntries = [];
@@ -73,97 +71,39 @@ exports.formatProjectManagerData = (data, SAPCategoryMap) => {
     }
   });
 
+  billable.sort((a, b) => a["Job Name/Number"] - b["Job Name/Number"]);
+
+  const formattedBillable = [];
+
+  for (let i = 0; i < billable.length; i++) {
+    //check if Job Name/Number of next entry matches current
+    //if not, add empty rows in between
+    let currentRows = [];
+    if (
+      billable[i + 1] &&
+      billable[i + 1]["Job Name/Number"] !== billable[i]["Job Name/Number"]
+    ) {
+      currentRows = [billable[i], {}, {}];
+    } else {
+      currentRows = [billable[i]];
+    }
+
+    formattedBillable.push(...currentRows);
+  }
+
   return [
     ...nonBillable.sort((a, b) => a["Job Title"] - b["Job Title"]),
     {},
-    ...billable.sort((a, b) => a["Job Name/Number"] - b["Job Name/Number"]),
+    {},
+    ...formattedBillable,
   ];
 };
-
-// exports.styleWorksheetColumns = (worksheet, type) => {
-//   if (type === "ShopManager") {
-//     const columnCount = Object.keys(worksheet).filter((key) =>
-//       key.match(/^[A-Z]+1$/)
-//     ).length; // Match header cells (e.g., A1, B1, etc.)
-
-//     worksheet["!cols"] = Array(columnCount).fill({ wch: 20 });
-//   }
-//   if (type === "ProjectManager") {
-//     worksheet["!cols"] = [
-//       { wch: 30 },
-//       { wch: 40 },
-//       { wch: 50 },
-//       { wch: 20 },
-//       { wch: 10 },
-//       { wch: 10 },
-//       { wch: 40 },
-//     ];
-//   }
-// };
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
 
   return date;
 };
-
-// exports.formatDateColumnInSheet = (worksheet, dateColumnIndex) => {
-//   const range = XLSX.utils.decode_range(worksheet["!ref"]); // Get range of the worksheet
-
-//   // Loop over the rows in the worksheet (excluding the header row)
-//   for (let row = range.s.r + 1; row <= range.e.r; row++) {
-//     const dateCell = XLSX.utils.encode_cell({ r: row, c: dateColumnIndex }); // Get cell reference
-//     const dateString = worksheet[dateCell]?.v; // Get the cell value (date string)
-
-//     if (dateString) {
-//       const formattedDate = formatDate(dateString); // Convert to a Date object
-//       worksheet[dateCell] = {
-//         t: "d", // Type is 'd' for date
-//         v: formattedDate,
-//         z: "dd-mmm-yy", // Custom date format (Excel-friendly)
-//       };
-//     }
-//   }
-// };
-
-// exports.styleAndFillShopManagerWorksheet = (
-//   formattedShopManagerData,
-//   shopManagerWorksheet
-// ) => {
-//   const headers = Object.keys(formattedShopManagerData[0]);
-
-//   // Add header row and apply styles
-//   const headerRow = shopManagerWorksheet.addRow(headers);
-
-//   // Style headers
-//   headerRow.eachCell((cell) => {
-//     cell.font = { bold: true };
-//     cell.alignment = { vertical: "middle", horizontal: "center" };
-//     cell.fill = {
-//       type: "pattern",
-//       pattern: "solid",
-//       //   fgColor: { argb: "FFB6D7A8" }, // Light green
-//     };
-//   });
-
-//   // Set column widths dynamically
-//   shopManagerWorksheet.columns = headers.map((header) => ({
-//     header, // Header name
-//     key: header, // Key used for row data
-//     width: 30, // Default width; you can customize this
-//   }));
-
-//   // Add all rows in bulk
-//   shopManagerWorksheet.addRows(formattedShopManagerData);
-
-//   // Style specific rows or columns, e.g., date formatting
-//   const dateColumn = shopManagerWorksheet.getColumn("Date"); // Adjust "Date" to match your column key
-//   if (dateColumn) {
-//     dateColumn.numFmt = "mm/dd/yyyy"; // Date format
-//   }
-// };
-
-/////
 
 exports.styleAndFillShopManagerWorksheet = (
   formattedShopManagerData,
@@ -179,9 +119,6 @@ exports.styleAndFillShopManagerWorksheet = (
     "Non-Chargable",
     "Item No.",
   ];
-
-  // Map keys to header order
-  // const dataKeys = ["SubjobID", "Staff", "TimeTypes", "Date", "Quantity", "NonChargable", "ItemNo"];
 
   // Define column styles
   const columnStyles = {
@@ -338,14 +275,14 @@ exports.styleAndFillProjectManagerWorksheet = (
     const addedRow = projectManagerWorksheet.addRow(rowValues);
 
     // Apply alternating row background colors
-    const backgroundColor = rowIndex % 2 === 0 ? "#f2f2f2" : "#ffffff"; // Alternate gray and white
+    // const backgroundColor = rowIndex % 2 === 0 ? "#f2f2f2" : "#ffffff"; // Alternate gray and white
     addedRow.eachCell((cell, colNumber) => {
       // Apply alternating background color
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: backgroundColor.replace("#", "") }, // Set background color
-      };
+      // cell.fill = {
+      //   type: "pattern",
+      //   pattern: "solid",
+      //   fgColor: { argb: backgroundColor.replace("#", "") }, // Set background color
+      // };
 
       // Specific background color for "Billable" and "Non-billable"
       if (cell.value === "Billable") {
