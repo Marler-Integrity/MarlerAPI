@@ -143,8 +143,16 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
             console.log('HERE1')
         //check if user already has account
         const User = createUserModel(req.db);
-        let user = await User.findOne({where: {Email: Email}});
-        if(user) return next(new ErrorResponse(`You already have an account`, 400));
+        let user;
+        try {
+            user = await User.findOne({where: {Email: Email}});    
+            if(user) return next(new ErrorResponse(`You already have an account`, 400));
+        } catch (error) {
+            console.log(error);
+            throw new Error('Error in getting user ' + error.message);
+        }
+        
+        
         console.log('HERE2')
         //get data from azure - compare last names to People table to get right profile
         const azureUserData = await getUserProfile(Email);
