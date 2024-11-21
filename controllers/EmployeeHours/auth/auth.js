@@ -145,7 +145,8 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
         const User = createUserModel(req.db);
         let user;
         try {
-            user = await User.findOne({where: {Email: Email}});    
+            user = await User.findOne({where: {Email: Email}});  
+            console.log(user);
             if(user) return next(new ErrorResponse(`You already have an account`, 400));
         } catch (error) {
             console.log(error);
