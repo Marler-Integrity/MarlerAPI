@@ -135,72 +135,76 @@ exports.userRegister = asyncHandler(async (req, res, next) => {
  * 
  **/
 exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
-    const t = await req.db.transaction();
-    try {
-        const { Email, Password } = req.body;
+    // const t = await req.db.transaction();
+    // try {
+    //     const { Email, Password } = req.body;
 
-        if(!Email || !Password) return next(new ErrorResponse(`Please Provide an Email and Password in Request`, 400))
+    //     if(!Email || !Password) return next(new ErrorResponse(`Please Provide an Email and Password in Request`, 400))
 
-        //check if user already has account
-        const User = createUserModel(req.db);
-        let user = await User.findOne({where: {Email: Email}});
-        if(user) return next(new ErrorResponse(`You already have an account`, 400));
+    //     //check if user already has account
+    //     const User = createUserModel(req.db);
+    //     let user = await User.findOne({where: {Email: Email}});
+    //     if(user) return next(new ErrorResponse(`You already have an account`, 400));
 
-        //get data from azure - compare last names to People table to get right profile
-        const azureUserData = await getUserProfile(Email);
-        const People = createPeopleModel(req.db);
-        const person = await People.findOne({ where: { LastName: azureUserData.surname } });
+    //     //get data from azure - compare last names to People table to get right profile
+    //     const azureUserData = await getUserProfile(Email);
+    //     const People = createPeopleModel(req.db);
+    //     const person = await People.findOne({ where: { LastName: azureUserData.surname } });
 
-        if (!person) return next(new ErrorResponse(`Could Not Find Your Name in Our System`, 404));
+    //     if (!person) return next(new ErrorResponse(`Could Not Find Your Name in Our System`, 404));
 
-        let token = crypto.randomBytes(32).toString("hex"); //token for verification
-        //create the user
-        try {
-            const hash = await bcrypt.hash(Password, 10);
+    //     let token = crypto.randomBytes(32).toString("hex"); //token for verification
+    //     //create the user
+    //     try {
+    //         const hash = await bcrypt.hash(Password, 10);
 
-            user = await User.create({
-                Email: Email, 
-                Password: hash, 
-                FirstName: azureUserData.givenName, 
-                LastName: azureUserData.surname, 
-                Role: 'Field',
-                IsActive: true,
-                CreatedAt: new Date(),
-                Token: token,
-                IsVerified: false,
-                PersonID: person.PersonID
-            }, {transaction: t})
-        } catch (error) {
-            // await t.rollback();
-            console.log(error);
-            throw new Error('Error Creating Account in User DB');
-        }
+    //         user = await User.create({
+    //             Email: Email, 
+    //             Password: hash, 
+    //             FirstName: azureUserData.givenName, 
+    //             LastName: azureUserData.surname, 
+    //             Role: 'Field',
+    //             IsActive: true,
+    //             CreatedAt: new Date(),
+    //             Token: token,
+    //             IsVerified: false,
+    //             PersonID: person.PersonID
+    //         }, {transaction: t})
+    //     } catch (error) {
+    //         // await t.rollback();
+    //         console.log(error);
+    //         throw new Error('Error Creating Account in User DB');
+    //     }
         
-        //send verification email
-        let verificationLink = `${process.env.SITE_URL}/verify-email/${token}`;
-        const mailObject = {
-            sendTo: Email,
-            subject: `Verify Your Email Address`,
-            plainText: `${verificationLink}`,
-            htmlContent: getHTML(verificationLink)
-        }
+    //     //send verification email
+    //     let verificationLink = `${process.env.SITE_URL}/verify-email/${token}`;
+    //     const mailObject = {
+    //         sendTo: Email,
+    //         subject: `Verify Your Email Address`,
+    //         plainText: `${verificationLink}`,
+    //         htmlContent: getHTML(verificationLink)
+    //     }
 
-        try {
-            const result = await sendVerificationEmail(mailObject);
-            await t.commit();
-            res.status(200).json({
-                success: true,
-                msg: `Please Verify Your Email Address`
-            });
-        } catch (error) {
-            // await t.rollback();
-            throw error;
-        }
-    } catch (error) {
-        await t.rollback();
-        console.log(error);
-        return next(new ErrorResponse(`Server Error - fieldUserRegister - ${error.message}`));
-    }
+    //     try {
+    //         const result = await sendVerificationEmail(mailObject);
+    //         await t.commit();
+    //         res.status(200).json({
+    //             success: true,
+    //             msg: `Please Verify Your Email Address`
+    //         });
+    //     } catch (error) {
+    //         // await t.rollback();
+    //         throw error;
+    //     }
+    // } catch (error) {
+    //     await t.rollback();
+    //     console.log(error);
+    //     return next(new ErrorResponse(`Server Error - fieldUserRegister - ${error.message}`));
+    // }
+    res.status(200).json({
+        success: true,
+        message: 'Route is working'
+    });
 });
 
 /**
