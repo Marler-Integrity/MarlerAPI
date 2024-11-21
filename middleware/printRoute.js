@@ -1,5 +1,7 @@
 const printRoute = (req, res, next) => {
-    console.log(`THIS IS THE ROUTE - ${req.originalUrl}`)
+    console.log(`Route: ${req.originalUrl}`);
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
     next();
 }
 
