@@ -147,7 +147,7 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
         try {
             user = await User.findOne({where: {Email: Email}});  
             console.log(user);
-            if(user) return next(new ErrorResponse(`You already have an account`, 400));
+            // if(user) return next(new ErrorResponse(`You already have an account`, 400));
         } catch (error) {
             console.log(error);
             throw new Error('Error in getting user ' + error.message);
