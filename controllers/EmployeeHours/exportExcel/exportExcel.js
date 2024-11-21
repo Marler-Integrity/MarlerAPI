@@ -14,8 +14,10 @@ const {
   styleAndFillProjectManagerWorksheet,
 } = require("../../../utils/EmployeeHours/excelExport/exportWorkingDataUtils");
 
+const { Op } = require("sequelize");
+
 exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
-  const workingData = req.body.workingData;
+  const { workingData, entriesToKeep } = req.body;
 
   // Check that data is in the form of an array
   if (!Array.isArray(workingData) || workingData.length === 0) {
@@ -103,7 +105,7 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
       { Submitted: true },
       {
         where: {
-          // SRDID: { [Op.in]: employeeEntryIDs },
+          SRDID: { [Op.notIn]: entriesToKeep },
           Locked: true,
         },
       }
