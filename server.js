@@ -50,8 +50,8 @@ app.use('/api/v1/users', users);
 app.use('/api/v1/checklist', checklist);
 
 // app.use('/api/v1/employeehours', getSAPRef, employeeHoursRouter);
-// app.use('/api/v1/employeehours', employeeHoursRouter);
-app.use('/api/v1/employeehours', getJobsFromSP, employeeHoursRouter);
+app.use('/api/v1/employeehours', employeeHoursRouter);
+// app.use('/api/v1/employeehours', getJobsFromSP, employeeHoursRouter);
 
 //error handler
 app.use(errorHandler);
