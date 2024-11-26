@@ -1,20 +1,24 @@
 const asyncHandler = require("../../../middleware/async");
+//models
 const createWorkingDataModel = require("../../../models/EmployeeHours/WorkingData");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
 const createPeopleModel = require("../../../models/EmployeeHours/People");
 const createSAPCategoryModel = require("../../../models/EmployeeHours/SAPCategory");
-const ErrorResponse = require("../../../utils/ErrorResponse");
+const createArchivedDataModel = require("../../../models/EmployeeHours/ArchivedData");
+//packages
 const fs = require("fs");
 const path = require("path");
 const ExcelJS = require("exceljs");
+const { Op } = require("sequelize");
+const { v4: uuidv4 } = require("uuid");
+//utils
+const ErrorResponse = require("../../../utils/ErrorResponse");
 const {
   formatShopManagerData,
   formatProjectManagerData,
   styleAndFillShopManagerWorksheet,
   styleAndFillProjectManagerWorksheet,
 } = require("../../../utils/EmployeeHours/excelExport/exportWorkingDataUtils");
-
-const { Op } = require("sequelize");
 
 exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
   const { workingData, entriesToKeep } = req.body;
@@ -30,10 +34,10 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
   }
 
   // Set up models
-  const WorkingData = createWorkingDataModel(req.db);
-  const SubmittedRawData = createSubmittedRawDataModel(req.db);
   const People = createPeopleModel(req.db);
   const SAPCategory = createSAPCategoryModel(req.db);
+
+  const transaction = await req.db.transaction();
 
   try {
     // Get all people and SAP categories
@@ -100,19 +104,10 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     // Write the workbook to the file
     await workbook.xlsx.writeFile(shopHoursFilePath);
 
-    //update all currently locked submittedRawData entries to submitted
-    const [affectedRows] = await SubmittedRawData.update(
-      { Submitted: true },
-      {
-        where: {
-          SRDID: { [Op.notIn]: entriesToKeep },
-          Locked: true,
-        },
-      }
-    );
+    //update submittedRawData, archive working data
+    await cleanUpData(entriesToKeep, workingData, transaction, req.db);
 
-    //clear working data
-    await WorkingData.destroy({ where: {} });
+    await transaction.commit();
 
     // Send the file as a downloadable blob response
     res.download(shopHoursFilePath, async (err) => {
@@ -129,6 +124,7 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error creating the excel file:", error);
+    await transaction.rollback();
     return next(
       new ErrorResponse(
         500,
@@ -137,3 +133,52 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     );
   }
 });
+
+const cleanUpData = async (entriesToKeep, workingData, transaction, db) => {
+  try {
+    //set up models
+    const WorkingData = createWorkingDataModel(db);
+    const SubmittedRawData = createSubmittedRawDataModel(db);
+    const ArchivedData = createArchivedDataModel(db);
+
+    //update submittedAt for SubmittedRawData and ArchivedData
+    //adding unique submission id to all the archived items
+    const SubmissionID = uuidv4();
+    const SubmittedAt = new Date().toISOString();
+
+    //update all currently locked submittedRawData entries to submitted
+    await SubmittedRawData.update(
+      {
+        Submitted: true,
+        SubmittedAt,
+        Discarded: true,
+      },
+      {
+        where: {
+          SRDID: { [Op.notIn]: entriesToKeep },
+          Locked: true,
+        },
+        transaction,
+      }
+    );
+
+    //format data for archiving
+    const dataToArchive = workingData.map(({ WorkingDataID, ...item }) => ({
+      ...item,
+      SubmissionID,
+      SubmittedAt,
+    }));
+
+    await ArchivedData.bulkCreate(dataToArchive, { transaction });
+
+    //clear working data from database and commit changes
+    await WorkingData.destroy({ where: {}, transaction });
+  } catch (error) {
+    return next(
+      new ErrorResponse(
+        500,
+        `Server Error - exportWorkingDataToExcel - ${error.message}`
+      )
+    );
+  }
+};
