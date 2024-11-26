@@ -35,7 +35,9 @@ exports.saveWorkingData = asyncHandler(async (req, res, next) => {
     });
 
     // Separate new and existing entries
-    const newEntries = workingData.filter((entry) => !entry.WorkingDataID);
+    const newEntries = workingData
+      .filter((entry) => !entry.WorkingDataID)
+      .map(({ WorkingDataID, ...entry }) => entry);
     const existingEntries = workingData.filter((entry) => entry.WorkingDataID);
 
     // Bulk create new entries
@@ -62,8 +64,6 @@ exports.saveWorkingData = asyncHandler(async (req, res, next) => {
         transaction,
       }
     );
-
-    console.log(affectedRows);
 
     // Commit transaction
     await transaction.commit();

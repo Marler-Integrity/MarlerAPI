@@ -47,8 +47,8 @@ const createSubmittedRawDataModel = (dbInstance) => {
         type: DataTypes.DATE,
       },
       Discarded: {
-        type: DataTypes.BOOLEAN
-      }
+        type: DataTypes.BOOLEAN,
+      },
     },
     {
       timestamps: false,
