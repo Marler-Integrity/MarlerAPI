@@ -136,6 +136,7 @@ exports.deleteEntry = asyncHandler(async (req, res, next) => {
  */
 exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
   const peopleID = req.params.peopleid;
+  if(!peopleID) return next(new ErrorResponse(`PeopleID not present in Request`, 400));
   try {
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
 

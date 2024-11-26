@@ -85,13 +85,36 @@ exports.userRegister = asyncHandler(async (req, res, next) => {
         if (existingUser) {
             return next(new ErrorResponse(`Email already in use`, 400));
         }
-        //hash password and set to object
+
+        //get data from azure - compare last names to People table to get right profile
+        const azureUserData = await getUserProfile(Email);
+        if(!azureUserData) return next(new ErrorResponse(`Must use Marler Integrity Account - Cannot Find User in MS365`, 400))
+        const People = createPeopleModel(req.db);
+        const person = await People.findOne({ where: { LastName: azureUserData.surname } });
+
+        // if (!person) return next(new ErrorResponse(`Could Not Find Your Name in Our System`, 404));
+
         const hash = await bcrypt.hash(Password, 10);
 
-        req.body.Password = hash;
+        let userData = {
+            Role: 'Manager',
+            FirstName: azureUserData.givenName, 
+            LastName: azureUserData.surname,
+            Email: Email,
+            Password: hash,
+            IsActive: true,
+            CreatedAt: new Date(),
+            IsVerified: true,
+            PersonID: person.PersonID || null
+        }
 
         //create user
-        const user = await User.create(req.body);
+        let user;
+        try {
+            user = await User.create(userData);    
+        } catch (error) {
+            throw new Error('Error Creating User in Database')
+        }
 
         //jwt payload
         const payload = {
@@ -99,7 +122,8 @@ exports.userRegister = asyncHandler(async (req, res, next) => {
             Email: user.Email,
             FirstName: user.FirstName,
             LastName: user.LastName,
-            Role: user.Role
+            Role: user.Role,
+            PersonID: user.PersonID
         }
 
         const expiry = '8h'; //jwt expires in 8 hours
