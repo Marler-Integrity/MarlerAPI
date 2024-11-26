@@ -123,6 +123,7 @@ exports.getWorkingData = asyncHandler(async (req, res, next) => {
       submittedRawData = await SubmittedRawData.findAll({
         where: {
           Submitted: false,
+          Discarded: false,
         },
         include: [
           {
@@ -137,6 +138,7 @@ exports.getWorkingData = asyncHandler(async (req, res, next) => {
         where: {
           Locked: true,
           Submitted: false,
+          Discarded: false,
         },
         include: [
           {

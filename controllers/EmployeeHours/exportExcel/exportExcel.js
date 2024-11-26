@@ -29,7 +29,11 @@ const {
  * 
  * @example Expected in req.body:
  * {
-        entriesToKeep: [int],
+        leftoverEntries: {
+          entriesToKeep: [int],
+          entriesToDiscard: [int]
+        }, //arrays of SRDIDs to keep or discard
+        
         workingData: 
           [
             {
@@ -55,7 +59,7 @@ const {
  *  Response: downloadable file
  */
 exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
-  const { workingData, entriesToKeep } = req.body;
+  const { workingData, leftoverEntries } = req.body;
 
   // Check that data is in the form of an array
   if (!Array.isArray(workingData) || workingData.length === 0) {
@@ -139,7 +143,7 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
     await workbook.xlsx.writeFile(shopHoursFilePath);
 
     //update submittedRawData, archive working data
-    await cleanUpData(entriesToKeep, workingData, transaction, req.db);
+    await cleanUpData(leftoverEntries, workingData, transaction, req.db);
 
     await transaction.commit();
 
@@ -168,8 +172,9 @@ exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
   }
 });
 
-const cleanUpData = async (entriesToKeep, workingData, transaction, db) => {
+const cleanUpData = async (leftoverEntries, workingData, transaction, db) => {
   try {
+    const { entriesToDiscard, entriesToKeep } = leftoverEntries;
     //set up models
     const WorkingData = createWorkingDataModel(db);
     const SubmittedRawData = createSubmittedRawDataModel(db);
@@ -180,16 +185,29 @@ const cleanUpData = async (entriesToKeep, workingData, transaction, db) => {
     const SubmissionID = uuidv4();
     const SubmittedAt = new Date().toISOString();
 
-    //update all currently locked submittedRawData entries to submitted
+    //update Discarded to true for entriesToDiscard
     await SubmittedRawData.update(
       {
-        Submitted: true,
-        SubmittedAt,
         Discarded: true,
       },
       {
         where: {
-          SRDID: { [Op.notIn]: entriesToKeep },
+          SRDID: { [Op.in]: entriesToDiscard },
+          Locked: true,
+        },
+        transaction,
+      }
+    );
+
+    //update the rest of the entries that have been used in this spreadsheet as submitted
+    await SubmittedRawData.update(
+      {
+        Submitted: true,
+        SubmittedAt,
+      },
+      {
+        where: {
+          SRDID: { [Op.notIn]: [...entriesToKeep, ...entriesToDiscard] }, //entries that are kept for later or discarded are NOT counted as submitted
           Locked: true,
         },
         transaction,
@@ -208,11 +226,6 @@ const cleanUpData = async (entriesToKeep, workingData, transaction, db) => {
     //clear working data from database and commit changes
     await WorkingData.destroy({ where: {}, transaction });
   } catch (error) {
-    return next(
-      new ErrorResponse(
-        500,
-        `Server Error - exportWorkingDataToExcel - ${error.message}`
-      )
-    );
+    throw error;
   }
 };

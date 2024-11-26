@@ -1,8 +1,10 @@
 const asyncHandler = require("../../../middleware/async");
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
 // const createMasterRawEntryModel = require("../../../models/EmployeeHours/MasterRawEntry");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
-const { sendVerificationEmail } = require("../../../utils/EmployeeHours/email/sendVerificationEmail");
+const {
+  sendVerificationEmail,
+} = require("../../../utils/EmployeeHours/email/sendVerificationEmail");
 const {
   getUserProfile,
 } = require("../../../utils/EmployeeHours/azure/userProfiles");
@@ -141,12 +143,12 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
     let employeeHourSubmissions = await SubmittedRawData.findAll({
-      where: { 
+      where: {
         PeopleID: peopleID,
         EntryDate: {
-          [Op.gte]: twoWeeksAgo
+          [Op.gte]: twoWeeksAgo,
         },
-        Discarded: false
+        Discarded: false,
       },
     });
 
@@ -164,7 +166,6 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
   }
 });
 
-
 /**
  * @author Julia Hack
  * @date November 13, 2024
@@ -174,7 +175,7 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
  */
 exports.getUnlockedEntries = asyncHandler(async (req, res, next) => {
   try {
-//set up models
+    //set up models
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
     const People = createPeopleModel(req.db);
 
@@ -190,6 +191,7 @@ exports.getUnlockedEntries = asyncHandler(async (req, res, next) => {
       where: {
         Locked: false,
         Submitted: false,
+        Discarded: false,
       },
       include: [
         {
