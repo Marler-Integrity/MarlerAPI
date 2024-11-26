@@ -20,6 +20,40 @@ const {
   styleAndFillProjectManagerWorksheet,
 } = require("../../../utils/EmployeeHours/excelExport/exportWorkingDataUtils");
 
+/**
+ * @date Nov 26, 2024
+ * @author Julia Hack
+ * @description Formats working data into spreadsheets
+ * @route POST /api/v1/employeehours/manager-verification/export-excel
+ * @access Manager users
+ * 
+ * @example Expected in req.body:
+ * {
+        entriesToKeep: [int],
+        workingData: 
+          [
+            {
+              WorkingDataID: int,
+              LastName: string,
+              FirstName: string,
+              JobName: string,
+              NumHours: float,
+              Description: string,
+              SAPCategory: int
+              Notes: string,
+              Regular: float,
+              OT: float,
+              SRDID: int,
+              PeopleID: int,
+              EntryDate: date,
+              FrontEndID: string,
+              IsCopy: boolean
+            }
+          ]
+  }
+
+ *  Response: downloadable file
+ */
 exports.exportWorkingDataToExcel = asyncHandler(async (req, res, next) => {
   const { workingData, entriesToKeep } = req.body;
 
