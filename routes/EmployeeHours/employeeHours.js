@@ -1,4 +1,7 @@
 const express = require("express");
+const getSAPRef = require('../../middleware/EmployeeHours/getSAPRef');
+const getJobsFromSP = require('../../middleware/EmployeeHours/getJobsFromSP');
+
 
 const {
   getAllPeople,
@@ -58,19 +61,19 @@ router
 
 router
   .route("/people")
-  .get(getAllPeople);
+  .get(getSAPRef, getAllPeople);
 
 router
     .route('/auth/register/field/verify-email/:verificationtoken')
     .get(verifyEmail)
 
-router
-    .route('/people')
-    .get(getAllPeople)
+// router
+//     .route('/people')
+//     .get(getAllPeople)
 
 router
   .route("/jobs")
-  .get(getAllJobs);
+  .get(getJobsFromSP, getAllJobs);
 
 
 router
