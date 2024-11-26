@@ -1,4 +1,5 @@
 const asyncHandler = require("../../../middleware/async");
+const { Op } = require('sequelize');
 // const createMasterRawEntryModel = require("../../../models/EmployeeHours/MasterRawEntry");
 const createSubmittedRawDataModel = require("../../../models/EmployeeHours/SubmittedRawData");
 const { sendVerificationEmail } = require("../../../utils/EmployeeHours/email/sendVerificationEmail");
@@ -136,8 +137,17 @@ exports.getEmployeeHourSubmissions = asyncHandler(async (req, res, next) => {
   try {
     const SubmittedRawData = createSubmittedRawDataModel(req.db);
 
+    let twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
     let employeeHourSubmissions = await SubmittedRawData.findAll({
-      where: { PeopleID: peopleID },
+      where: { 
+        PeopleID: peopleID,
+        EntryDate: {
+          [Op.gte]: twoWeeksAgo
+        },
+        Discarded: false
+      },
     });
 
     res.status(200).json({

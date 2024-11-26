@@ -4,7 +4,6 @@ const cors = require('cors');
 const morgan = require('morgan');
 const errorHandler = require('./middleware/error');
 const dbConnection = require('./middleware/dbConnection');
-const printRoute = require('./middleware/printRoute')
 
 // const connectDB = require('./config/db');
 
@@ -41,7 +40,6 @@ app.use(express.json());
 
 //db connection middleware
 app.use(dbConnection);
-app.use(printRoute)
 
 //route mounting
 app.use('/api/v1/subs', subs);
