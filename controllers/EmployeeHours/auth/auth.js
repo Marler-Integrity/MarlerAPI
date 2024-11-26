@@ -139,35 +139,29 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
     try {
         const { Email, Password } = req.body;
 
-        if(!Email || !Password) return next(new ErrorResponse(`Please Provide an Email and Password in Request`, 400))
-            console.log('HERE1')
+        if(!Email || !Password) return next(new ErrorResponse(`Please Provide an Email and Password in Request`, 400))            
         //check if user already has account
         const User = createUserModel(req.db);
         let user;
         try {
             user = await User.findOne({where: {Email: Email}});  
-            console.log(user);
             if(user) return next(new ErrorResponse(`You already have an account`, 400));
         } catch (error) {
             console.log(error);
             throw new Error('Error in getting user ' + error.message);
         }
         
-        
-        console.log('HERE2')
         //get data from azure - compare last names to People table to get right profile
         const azureUserData = await getUserProfile(Email);
         const People = createPeopleModel(req.db);
         const person = await People.findOne({ where: { LastName: azureUserData.surname } });
-        console.log('HERE3')
+
         if (!person) return next(new ErrorResponse(`Could Not Find Your Name in Our System`, 404));
 
         let token = crypto.randomBytes(32).toString("hex"); //token for verification
         //create the user
-        console.log('HERE4')
         try {
             const hash = await bcrypt.hash(Password, 10);
-            console.log('HERE5')
             user = await User.create({
                 Email: Email, 
                 Password: hash, 
@@ -180,13 +174,11 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
                 IsVerified: false,
                 PersonID: person.PersonID
             }, {transaction: t});
-            console.log('HERE6')
         } catch (error) {
             // await t.rollback();
             console.log(error);
             throw new Error('Error Creating Account in User DB');
         }
-        console.log('HERE7')
         //send verification email
         let verificationLink = `${process.env.SITE_URL}/verify-email/${token}`;
         const mailObject = {
@@ -195,10 +187,8 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
             plainText: `${verificationLink}`,
             htmlContent: getHTML(verificationLink)
         }
-        console.log('HERE8')
         try {
             const result = await sendVerificationEmail(mailObject);
-            console.log('HERE9')
             await t.commit();
             res.status(200).json({
                 success: true,
@@ -213,10 +203,6 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
         console.log(error);
         return next(new ErrorResponse(`Server Error - fieldUserRegister - ${error.message}`));
     }
-    // res.status(200).json({
-    //     success: true,
-    //     message: 'Route is working'
-    // });
 });
 
 /**
