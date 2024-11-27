@@ -9,7 +9,8 @@ const createJobNumberNameModel = (dbInstance) => {
             autoIncrement: true
         },
         JobNumber: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            unique: true
         },
         JobName: {
             type: DataTypes.STRING

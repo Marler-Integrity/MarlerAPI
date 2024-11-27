@@ -9,75 +9,86 @@ const { getFolderNamesFromSharePoint, getListItemsFromSharePoint } = require("..
  */
 const getJobsFromSP = async(req, res, next) => {
     try {
-        let jobArr = [];
+        // Get folder names and filter with regex
         let folders = await getFolderNamesFromSharePoint();
+        const regex = /^[0-9]{4} .+$/;
+        let jobs = folders.filter(folder => regex.test(folder));
 
-        const regex = /^[0-9]{4} .+$/; //regex test to rule out non job folders
-
-        let jobs = folders.filter((folder) => {
-            if(regex.test(folder)) return folder;
-        });
-
-        //array of list items with the job number and name
+        // Get additional jobs from SharePoint lists
         let lists = await getListItemsFromSharePoint();
-
         let joinedJobs = [...jobs, ...lists];
 
-        //create the objects
-        joinedJobs.forEach(job => {
-            jobArr.push({JobNumber: Number(job.split(' ')[0]), JobName: job.split(' ').slice(1).join(' ').trim(), Active: true});
+        // Create job objects, ensuring unique entries
+        let jobArr = Array.from(
+            new Map(
+                joinedJobs.map(job => [
+                    Number(job.split(' ')[0]),
+                    {
+                        JobNumber: Number(job.split(' ')[0]),
+                        JobName: job.split(' ').slice(1).join(' ').trim(),
+                        Active: true,
+                    },
+                ])
+            ).values()
+        );
+
+        // Fetch existing job numbers in a single query
+        const JobNumberName = createJobNumberNameModel(req.db);
+        const dbJobs = await JobNumberName.findAll({
+            attributes: ['JobNumber', 'Active'], // Fetch only necessary fields
         });
 
-        //get db data for comparison
-        const JobNumberName = createJobNumberNameModel(req.db);
-        let dbJobs = await JobNumberName.findAll();
+        // Create maps for quick lookup
+        const dbJobsMap = new Map(dbJobs.map(dbJob => [dbJob.JobNumber, dbJob.Active]));
+        const jobArrMap = new Map(jobArr.map(job => [job.JobNumber, job]));
 
-        let dbJobNumbersSet = new Set(dbJobs.map(dbJob => dbJob.JobNumber));
+        // Prepare lists for bulk operations
+        const jobsToCreate = [];
+        const jobsToUpdateActive = [];
+        const jobsToUpdateInactive = [];
 
-        // Iterate over jobArr to create new records if they don't exist in dbJobs
-        for (const job of jobArr) {
-            if (!dbJobNumbersSet.has(job.JobNumber)) {
-                // JobNumber exists in jobArr but not in dbJobs, create a new record
-                await JobNumberName.create({
-                    JobNumber: job.JobNumber,
-                    JobName: job.JobName,
-                    Active: true
-                });
+        // Iterate over jobArr to determine actions
+        jobArr.forEach(job => {
+            if (!dbJobsMap.has(job.JobNumber)) {
+                // New job to insert
+                jobsToCreate.push(job);
+            } else if (dbJobsMap.get(job.JobNumber) === false) {
+                // Existing job, but inactive - activate it
+                jobsToUpdateActive.push(job.JobNumber);
             }
+        });
+
+        // Find jobs in the database but not in jobArr
+        dbJobs.forEach(dbJob => {
+            if (!jobArrMap.has(dbJob.JobNumber) && dbJob.Active) {
+                // Job exists in the database but is missing in jobArr - deactivate it
+                jobsToUpdateInactive.push(dbJob.JobNumber);
+            }
+        });
+
+        // Perform bulk operations
+        if (jobsToCreate.length > 0) {
+            await JobNumberName.bulkCreate(jobsToCreate, { ignoreDuplicates: true });
         }
 
-        // Create a Set of JobNumbers from jobArr for easy lookup
-        const jobArrJobNumbersSet = new Set(jobArr.map(job => job.JobNumber));
+        if (jobsToUpdateActive.length > 0) {
+            await JobNumberName.update(
+                { Active: true },
+                { where: { JobNumber: jobsToUpdateActive } }
+            );
+        }
 
-        // Iterate over dbJobs to set `active` to false if not found in jobArr
-        for (const dbJob of dbJobs) {
-            // Check if the JobNumber exists in jobArr
-            if (!jobArrJobNumbersSet.has(dbJob.JobNumber)) {
-                // JobNumber exists in dbJobs but not in jobArr, set `active` to false and update
-                await JobNumberName.update(
-                    { Active: false },
-                    { where: { JobNumber: dbJob.JobNumber } }
-                );
-            } else {
-                // JobNumber exists in both jobArr and dbJobs, check if it's active in jobArr
-                const jobInArr = jobArr.find(job => job.JobNumber === dbJob.JobNumber);
-                if (jobInArr && jobInArr.Active === true && dbJob.Active === false) {
-                    // Update dbJob to set `Active` to true if needed
-                    await JobNumberName.update(
-                        { Active: true },
-                        { where: { JobNumber: dbJob.JobNumber } }
-                    );
-                }
-            }
+        if (jobsToUpdateInactive.length > 0) {
+            await JobNumberName.update(
+                { Active: false },
+                { where: { JobNumber: jobsToUpdateInactive } }
+            );
         }
 
         next();
     } catch (error) {
-        console.log(error);
-        // calling next here so it continues operating
-        // this middleware is not 100% necessary to continue operations
-        // consider adding logging of some sort to ensure this is eventually caught and dealt with
-        next();
+        console.error(error);
+        next(); // Continue operation despite the error
     }
 }
 

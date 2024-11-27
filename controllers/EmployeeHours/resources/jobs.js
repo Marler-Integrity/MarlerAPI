@@ -11,7 +11,7 @@ exports.getAllJobs = asyncHandler(async(req, res, next) => {
     try {
         const JobNumberName = createJobNumberNameModel(req.db);
 
-        let jobs = await JobNumberName.findAll();
+        let jobs = await JobNumberName.findAll({where: {Active: true}});
 
         res.status(200).json({
             success: true,
