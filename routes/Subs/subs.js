@@ -1,6 +1,5 @@
 const express =  require('express');
 const deleteExpired = require('../../middleware/deleteExpired');
-const Sub = require('../../models/Subs/Sub');
 
 const {
     getAllSubs,
@@ -19,7 +18,7 @@ const router = express.Router();
 
 router
     .route('/')
-    .get(deleteExpired(Sub), getAllSubs)
+    .get(deleteExpired('Sub'), getAllSubs)
     .post(createSub)
 
 router  

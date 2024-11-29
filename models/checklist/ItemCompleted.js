@@ -13,4 +13,5 @@ const ChecklistItemCompletedSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('ChecklistItemCompleted', ChecklistItemCompletedSchema)
+module.exports = ChecklistItemCompletedSchema;
+// module.exports = mongoose.model('ChecklistItemCompleted', ChecklistItemCompletedSchema)

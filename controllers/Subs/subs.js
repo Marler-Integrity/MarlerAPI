@@ -3,13 +3,14 @@ const asyncHandler = require('../../middleware/async');
 const ErrorResponse = require('../../utils/ErrorResponse');
 
 //models
-const Sub = require('../../models/Subs/Sub');
+const SubSchema = require('../../models/Subs/Sub');
 
 //@desc     Get all Sub Documents - by username or admin(all docs)
 //@route    GET /api/v1/subs/
 //@access   Public
 exports.getAllSubs = asyncHandler(async (req, res, next) => {
     // let username = '*';
+    const Sub = req.db.model('Sub', SubSchema)
     let subDocs;
     
     if(req.query.user){
@@ -31,6 +32,7 @@ exports.getAllSubs = asyncHandler(async (req, res, next) => {
 //@route    POST /api/v1/subs/
 //@access   Public - signed in through MS Teams
 exports.createSub = asyncHandler(async (req, res, next) => {
+    const Sub = req.db.model('Sub', SubSchema)
     let sub = await Sub.create(req.body);
 
     res.status(200).json({
@@ -43,6 +45,7 @@ exports.createSub = asyncHandler(async (req, res, next) => {
 //@route    PUT /api/v1/subs/[id]
 //@access   Public - signed in through MS Teams
 exports.updateSub = asyncHandler(async (req, res, next) => {
+    const Sub = req.db.model('Sub', SubSchema)
     let sub = await Sub.findByIdAndUpdate(req.params.id, req.body, {new: true});
     
     if(!sub){
@@ -60,6 +63,7 @@ exports.updateSub = asyncHandler(async (req, res, next) => {
 //@access   Public - signed in through MS Teams
 exports.deleteSub = asyncHandler(async (req, res, next) => {
     try {
+        const Sub = req.db.model('Sub', SubSchema)
         await Sub.findByIdAndDelete(req.params.id);    
     } catch (error) {
         return next(new ErrorResponse(`Error deleting document with ID ${req.params.id}`))
