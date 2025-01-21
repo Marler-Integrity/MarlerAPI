@@ -109,6 +109,8 @@ router
   .route("/shop/submissions/:peopleid")
   .get(getEmployeeHourSubmissions);
 
+//This is the route to update the SAP Job Numbers
+//this needs to be done once a year.
 router
   .route("/import/internaljobs")
   .post(upload.single("file"), importInternalJobList);

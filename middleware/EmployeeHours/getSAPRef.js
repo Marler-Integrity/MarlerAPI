@@ -15,6 +15,7 @@ const ErrorResponse = require('../../utils/ErrorResponse');
  * @returns void
  */
 const getSAPRef = async (req, res, next) => {
+    
     try {
         let data = await getSAPRefExcelFile();
 
@@ -24,11 +25,17 @@ const getSAPRef = async (req, res, next) => {
             order: [['SAPRefUpdatedAt', 'DESC']]
         });
 
-        if (!dbUpdateDate || (new Date(data.sapRefUpdateDate) > new Date(dbUpdateDate))) {
+        /**
+         * If there is a problem with updating the SAP Ref names (no new names are getting added to db)
+         * it has something to do with Control Data Date
+         * and the if statement below not being triggered
+         * it's getting the updated date from the excel file and comparing to the last time DB was updated
+         */
+        if (!dbUpdateDate || (new Date(data.sapRefUpdateDate) > new Date(dbUpdateDate.SAPRefUpdatedAt))) {
             //Ref Data is newer than db -> update db
 
             let spPeoples = formatExcelFileToArray(data.sapRefExcelWorkbook); //sharepoint data into array of objects
-
+            // console.log('HERE',spPeoples)
             let dbPeoples;
             let People;
             try {
@@ -55,7 +62,7 @@ const getSAPRef = async (req, res, next) => {
                     existingPerson.matched = true;
                     updates.push({
                         ...spPerson,
-                        PeopleID: existingPerson.PeopleID
+                        PersonID: existingPerson.PersonID
                     });
                 }
             }
@@ -65,7 +72,7 @@ const getSAPRef = async (req, res, next) => {
 
             if (unmatchedDBPeople.length) {
                 unmatchedDBPeople.forEach(unmatchedPerson => {
-                    updates.push({ PeopleID: unmatchedPerson.PeopleID, IsActive: false });
+                    updates.push({ PersonID: unmatchedPerson.PersonID, IsActive: false });
                 });
             }
 
@@ -78,7 +85,7 @@ const getSAPRef = async (req, res, next) => {
                     const updatePromises = updates.map(update =>
                         People.update(
                             { IsActive: update.IsActive, ...update },
-                            { where: { PeopleID: update.PeopleID }, transaction }
+                            { where: { PersonID: update.PersonID }, transaction }
                         )
                     );
                     await Promise.all(updatePromises); // Execute all updates in parallel
@@ -86,7 +93,7 @@ const getSAPRef = async (req, res, next) => {
 
                 // Update ControlData with the latest SAPRefUpdatedAt date
                 await ControlData.create(
-                    { SAPRefUpdatedAt: Sequelize.literal(`'${new Date(data.sapRefUpdateDate).toISOString().split('T')[0]}'`) },
+                    { SAPRefUpdatedAt: Sequelize.literal(`'${new Date().toISOString().split('T')[0]}'`) },
                     { transaction }
                 );
             });

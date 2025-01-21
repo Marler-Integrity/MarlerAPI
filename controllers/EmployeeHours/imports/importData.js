@@ -3,6 +3,11 @@ const createSAPCategoryModel = require("../../../models/EmployeeHours/SAPCategor
 const ErrorResponse = require("../../../utils/ErrorResponse");
 const xlsx = require('xlsx');
 
+/**
+ * @description this route/controller is for importing the internal job numbers for SAP
+ *              this only needs to be done once a year
+ *              As of Jan 21, 2025 there is no UI for uploads - must be done through postman
+ */
 exports.importInternalJobList = asyncHandler(async(req, res, next) => {
     try {
         if(!req.file) return next(new ErrorResponse(`No File Uploaded`, 400));
