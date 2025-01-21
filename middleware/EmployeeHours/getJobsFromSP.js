@@ -18,6 +18,8 @@ const getJobsFromSP = async(req, res, next) => {
         let lists = await getListItemsFromSharePoint();
         let joinedJobs = [...jobs, ...lists];
 
+        // console.log(jobs, lists)
+
         // Create job objects, ensuring unique entries
         let jobArr = Array.from(
             new Map(
@@ -68,8 +70,10 @@ const getJobsFromSP = async(req, res, next) => {
 
         // Perform bulk operations
         if (jobsToCreate.length > 0) {
-            await JobNumberName.bulkCreate(jobsToCreate, { ignoreDuplicates: true });
+            await JobNumberName.bulkCreate(jobsToCreate);
         }
+
+        // , { ignoreDuplicates: true }
 
         if (jobsToUpdateActive.length > 0) {
             await JobNumberName.update(
@@ -77,6 +81,8 @@ const getJobsFromSP = async(req, res, next) => {
                 { where: { JobNumber: jobsToUpdateActive } }
             );
         }
+
+        // console.log(jobsToUpdateInactive)
 
         if (jobsToUpdateInactive.length > 0) {
             await JobNumberName.update(
