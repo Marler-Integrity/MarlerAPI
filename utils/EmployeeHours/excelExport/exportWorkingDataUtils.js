@@ -13,7 +13,7 @@ exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
         Quantity: Number(entry.Regular) || null,
         "Non-Chargable": null,
         "Item No.": String(peopleCodesMap[entry.PeopleID].RegSAPCode).padStart(
-          5,
+          6,
           0
         ),
       });
@@ -28,7 +28,7 @@ exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
         Quantity: Number(entry.OT) || null,
         "Non-Chargable": null,
         "Item No.": String(peopleCodesMap[entry.PeopleID].OTSAPCode).padStart(
-          5,
+          6,
           0
         ),
       });
@@ -277,13 +277,6 @@ exports.styleAndFillProjectManagerWorksheet = (
     // Apply alternating row background colors
     // const backgroundColor = rowIndex % 2 === 0 ? "#f2f2f2" : "#ffffff"; // Alternate gray and white
     addedRow.eachCell((cell, colNumber) => {
-      // Apply alternating background color
-      // cell.fill = {
-      //   type: "pattern",
-      //   pattern: "solid",
-      //   fgColor: { argb: backgroundColor.replace("#", "") }, // Set background color
-      // };
-
       // Specific background color for "Billable" and "Non-billable"
       if (cell.value === "Billable") {
         cell.fill = {
