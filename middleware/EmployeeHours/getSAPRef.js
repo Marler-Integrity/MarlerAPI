@@ -102,7 +102,9 @@ const getSAPRef = async (req, res, next) => {
         next();
     } catch (error) {
         console.log(error);
-        return next(new ErrorResponse(`Error Retrieving SAP Ref File`, 500));
+        // no longer returning the error response, so the front end can still get the list of people if this fails
+        // return next(new ErrorResponse(`Error Retrieving SAP Ref File`, 500));
+        next();
     }
 }
 
