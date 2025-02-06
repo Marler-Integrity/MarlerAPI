@@ -195,15 +195,6 @@ exports.styleAndFillShopManagerWorksheet = (
         Object.assign(cell, columnStyles[columnKey]); // Apply the column's style
       }
 
-      // If the current column is "Date" (4th column, index 3), format as date
-      if (colNumber === 4) {
-        const dateValue = cell.value;
-        const formattedDate = formatDate(dateValue); // Format the date
-        if (formattedDate) {
-          cell.value = formattedDate;
-          cell.numFmt = "dd-mmm-yy"; // Apply custom date format
-        }
-      }
     });
   });
 };
