@@ -18,7 +18,7 @@ const createSubmittedRawDataModel = (dbInstance) => {
         type: DataTypes.STRING,
       },
       Description: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING, //remove this later - replaced with SAP Category
       },
       NumHours: {
         type: DataTypes.FLOAT,
@@ -49,6 +49,9 @@ const createSubmittedRawDataModel = (dbInstance) => {
       Discarded: {
         type: DataTypes.BOOLEAN,
       },
+      SAPCategory: {
+        type: DataTypes.INTEGER,
+      }
     },
     {
       timestamps: false,
