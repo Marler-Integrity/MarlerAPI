@@ -1,5 +1,7 @@
 const createJobNumberNameModel = require("../../models/EmployeeHours/JobNumberName");
 const { getFolderNamesFromSharePoint, getListItemsFromSharePoint } = require("../../utils/EmployeeHours/sp/fetchSPContent");
+const { Op } = require('sequelize');
+
 
 /**
  * @description Middleware to update the jobs in the db - gets folders from sharepoint list and sharepoint folders to create the list and compare with the current items in the DB
@@ -18,8 +20,6 @@ const getJobsFromSP = async(req, res, next) => {
         let lists = await getListItemsFromSharePoint();
         let joinedJobs = [...jobs, ...lists];
 
-        // console.log(jobs, lists)
-
         // Create job objects, ensuring unique entries
         let jobArr = Array.from(
             new Map(
@@ -37,26 +37,37 @@ const getJobsFromSP = async(req, res, next) => {
         // Fetch existing job numbers in a single query
         const JobNumberName = createJobNumberNameModel(req.db);
         const dbJobs = await JobNumberName.findAll({
-            attributes: ['JobNumber', 'Active'], // Fetch only necessary fields
+            attributes: ['JobNumber', 'JobName', 'Active'], // Fetch only necessary fields
         });
 
         // Create maps for quick lookup
-        const dbJobsMap = new Map(dbJobs.map(dbJob => [dbJob.JobNumber, dbJob.Active]));
+        const dbJobsMap = new Map(
+            dbJobs.map(dbJob => [dbJob.JobNumber, { JobName: dbJob.JobName, Active: dbJob.Active }]));
         const jobArrMap = new Map(jobArr.map(job => [job.JobNumber, job]));
 
         // Prepare lists for bulk operations
         const jobsToCreate = [];
         const jobsToUpdateActive = [];
         const jobsToUpdateInactive = [];
+        const jobsToUpdateName = [];
 
         // Iterate over jobArr to determine actions
         jobArr.forEach(job => {
-            if (!dbJobsMap.has(job.JobNumber)) {
-                // New job to insert
+            const existing = dbJobsMap.get(job.JobNumber);
+
+            if(!existing){
                 jobsToCreate.push(job);
-            } else if (dbJobsMap.get(job.JobNumber) === false) {
-                // Existing job, but inactive - activate it
-                jobsToUpdateActive.push(job.JobNumber);
+            } else {
+                const nameChanged = existing.JobName !== job.JobName;
+                const isInactive = existing.Active === false
+
+                if(nameChanged){ 
+                    jobsToUpdateName.push({JobNumber: job.JobNumber, JobName: job.JobName});
+                }
+
+                if(isInactive){
+                    jobsToUpdateActive.push(job.JobNumber)
+                }
             }
         });
 
@@ -73,21 +84,36 @@ const getJobsFromSP = async(req, res, next) => {
             await JobNumberName.bulkCreate(jobsToCreate);
         }
 
-        // , { ignoreDuplicates: true }
-
         if (jobsToUpdateActive.length > 0) {
             await JobNumberName.update(
                 { Active: true },
-                { where: { JobNumber: jobsToUpdateActive } }
+                {
+                    where: {
+                        JobNumber: {
+                            [Op.in]: jobsToUpdateActive
+                        }
+                    }
+                }
             );
         }
-
-        // console.log(jobsToUpdateInactive)
 
         if (jobsToUpdateInactive.length > 0) {
             await JobNumberName.update(
                 { Active: false },
-                { where: { JobNumber: jobsToUpdateInactive } }
+                {
+                    where: {
+                        JobNumber: {
+                            [Op.in]: jobsToUpdateInactive
+                        }
+                    }
+                }
+            );
+        }
+
+        for (const job of jobsToUpdateName) {
+            await JobNumberName.update(
+                { JobName: job.JobName },
+                { where: { JobNumber: job.JobNumber } }
             );
         }
 

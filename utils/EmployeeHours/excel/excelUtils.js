@@ -1,5 +1,6 @@
 const xlsx = require('xlsx');
 const {getFileFromSharePoint} = require('../sp/fetchSPContent');
+const {exclusionList} = require("./exclusionList");
 
 exports.getSAPRefExcelFile = async() => {
     const fileContent = await getFileFromSharePoint();
@@ -38,9 +39,13 @@ exports.formatExcelFileToArray = (workbook) => {
         }
     }
 
+    
+
     let peopleArray = [];
     for(let i = Number(foundData.dataBegins)-1; i < Number(foundData.dataEnds); i++){
         let row = rows[i];
+
+        if(exclusionList.some(obj => obj.LastName === row[1])) continue;
 
         const peopleObject = {
             LastName: row[0],
