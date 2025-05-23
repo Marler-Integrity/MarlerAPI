@@ -38,9 +38,5 @@ exports.exclusionList = [
     {
         FirstName: "Thomas",
         LastName: "McCann"
-    },
-    {
-        FirstName: "Joseph",
-        LastName: "Predovic"
     }
 ]
