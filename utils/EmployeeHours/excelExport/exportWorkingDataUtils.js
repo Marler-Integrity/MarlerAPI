@@ -1,3 +1,5 @@
+const { format } = require('date-fns');
+
 exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
   const formattedData = data.flatMap((entry) => {
     const separatedEntries = [];
@@ -8,7 +10,7 @@ exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
       separatedEntries.push({
         "Subjob ID": SAPCategoryMap[entry.SAPCategory].SubCategoryNumber,
         Staff: `${entry.FirstName} ${entry.LastName}`,
-        Date: entry.EntryDate,
+        Date: format(entry.EntryDate, 'dd-MMM-yy'),
         "Time Type": "Standard",
         Quantity: Number(entry.Regular) || null,
         "Non-Chargable": null,
@@ -23,7 +25,7 @@ exports.formatShopManagerData = (data, peopleCodesMap, SAPCategoryMap) => {
       separatedEntries.push({
         "Subjob ID": SAPCategoryMap[entry.SAPCategory].SubCategoryNumber,
         Staff: `${entry.FirstName} ${entry.LastName}`,
-        Date: entry.EntryDate,
+        Date: format(entry.EntryDate, 'dd-MMM-yy'),
         "Time Type": "Overtime",
         Quantity: Number(entry.OT) || null,
         "Non-Chargable": null,
@@ -53,7 +55,7 @@ exports.formatProjectManagerData = (data, SAPCategoryMap) => {
         "Employee Name": `${entry.FirstName} ${entry.LastName}`,
         "Job Title": `${sapCategory.SubCategoryNumber} ${sapCategory.SubCategoryName}`,
         "Job Name/Number": null,
-        "Date": entry.EntryDate,
+        "Date": format(entry.EntryDate, 'dd-MMM-yy'),
         "Billable/Non-billable": "Non-Billable",
         Hrs: Number(entry.Regular) || null,
         "O.T Hrs": Number(entry.OT) || null,
@@ -64,7 +66,7 @@ exports.formatProjectManagerData = (data, SAPCategoryMap) => {
         "Employee Name": `${entry.FirstName} ${entry.LastName}`,
         "Job Title": null,
         "Job Name/Number": entry.JobName,
-        "Date": entry.EntryDate,
+        "Date": format(entry.EntryDate, 'dd-MMM-yy'),
         "Billable/Non-billable": "Billable",
         Hrs: Number(entry.Regular) || null,
         "O.T Hrs": Number(entry.OT) || null,
