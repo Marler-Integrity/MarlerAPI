@@ -16,21 +16,28 @@ const getJobsFromSP = async(req, res, next) => {
         const regex = /^[0-9]{4} .+$/;
         let jobs = folders.filter(folder => regex.test(folder));
 
-        // Get additional jobs from SharePoint lists
+       // Get additional jobs from SharePoint lists
         let lists = await getListItemsFromSharePoint();
+
         let joinedJobs = [...jobs, ...lists];
 
         // Create job objects, ensuring unique entries
         let jobArr = Array.from(
             new Map(
-                joinedJobs.map(job => [
-                    Number(job.split(' ')[0]),
-                    {
-                        JobNumber: Number(job.split(' ')[0]),
-                        JobName: job.split(' ').slice(1).join(' ').trim(),
-                        Active: true,
-                    },
-                ])
+                joinedJobs
+                    .map(job => {
+                        const jobNumber = Number(job.split(' ')[0]);
+                        if (!jobNumber || isNaN(jobNumber)) return null;
+                        return [
+                            jobNumber,
+                            {
+                                JobNumber: jobNumber,
+                                JobName: job.split(' ').slice(1).join(' ').trim(),
+                                Active: true,
+                            },
+                        ];
+                    })
+                    .filter(Boolean)
             ).values()
         );
 

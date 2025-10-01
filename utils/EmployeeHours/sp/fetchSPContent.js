@@ -40,10 +40,10 @@ exports.getListItemsFromSharePoint = async () => {
   try {
     // Fetch the list items
     const listItems = await client
-      .api(`/sites/${process.env.SP_SITE_ID}/lists/${process.env.SP_RENTAL_LIST_ID}/items`)
-      // .api(`/sites/${process.env.SP_SITE_ID}/lists`)
-      .query({viewId: process.env.SP_RENTAL_VIEW_ID})
+      .api(`/sites/${process.env.SP_SITE_ID}/lists/${process.env.SP_RENTAL_LIST_ID}/items?viewId=${process.env.SP_RENTAL_VIEW_ID}`)
+      .header('Prefer', 'HonorNonIndexedQueriesWarningMayFailRandomly')
       .expand('fields') // Expands to include the fields
+      .filter(`fields/BilledBy eq '' or fields/BilledBy eq null`) // Filters items where BilledBy is empty or null
       .get();
     
     const columnData = listItems.value.map(item => {
