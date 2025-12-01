@@ -11,7 +11,11 @@ exports.getAllPeople = asyncHandler(async(req, res, next) => {
     try {
         let People = createPeopleModel(req.db);
 
-        let people = await People.findAll();
+        let people = await People.findAll(
+            {
+                where: {IsActive: true}
+            }
+        );
 
         res.status(200).json({
             success: true,
