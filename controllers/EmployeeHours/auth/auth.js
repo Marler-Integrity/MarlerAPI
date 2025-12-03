@@ -215,6 +215,7 @@ exports.fieldUserRegister = asyncHandler(async (req, res, next) => {
 
     //get data from azure - compare last names to People table to get right profile
     const azureUserData = await getUserProfile(Email);
+    
     const People = createPeopleModel(req.db);
     const person = await People.findOne({
       where: { LastName: azureUserData.surname },
