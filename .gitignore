@@ -2,3 +2,5 @@
 /config/config.env
 Migration.js
 /_data
+/.claude
+/docs
