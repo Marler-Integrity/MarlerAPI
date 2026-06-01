@@ -12,6 +12,7 @@ const {
 
 const {
   getAllCategories,
+  batchUpdateCategories,
 } = require("../../controllers/EmployeeHours/resources/categories");
 
 const upload = require("../../middleware/fileUpload");
@@ -68,6 +69,8 @@ router
 router.route("/jobs").get(getJobsFromSP, getAllJobs);
 
 router.route("/categories").get(getAllCategories);
+
+router.route("/categories/batch").post(batchUpdateCategories);
 
 router.route("/shop/entries").get(getUnlockedEntries);
 
