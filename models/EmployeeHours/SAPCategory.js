@@ -13,7 +13,7 @@ const createSAPCategoryModel = (dbInstance) => {
             allowNull: false
         },
         CategoryNumber: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: false
         },
         SubCategoryName: {
